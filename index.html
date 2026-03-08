@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Reply Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #111318;
+  --srf:       #191d27;
+  --srf2:      #1f2435;
+  --srf3:      #252a3d;
+  --border:    rgba(255,255,255,0.07);
+  --border2:   rgba(255,255,255,0.12);
+  --accent:    #4f8eff;
+  --accent-glow: rgba(79,142,255,0.18);
+  --gold:      #c9a84c;
+  --gold-soft: rgba(201,168,76,0.12);
+  --success:   #3ecf8e;
+  --danger:    #ff5c5c;
+  --text:      #e2e6f3;
+  --text-2:    #8891b0;
+  --text-3:    #4a5272;
+  --sidebar-w: 220px;
+  --header-h:  62px;
+  --safe-b:    env(safe-area-inset-bottom, 0px);
+  --radius:    12px;
+  --radius-sm: 8px;
+}
+
+html { height: 100%; -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout Shell ────────────────────────────────────────── */
+.shell {
+  display: flex;
+  height: 100dvh;
+  height: 100vh; /* fallback */
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--srf);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: 0 0 calc(16px + var(--safe-b));
+}
+
+.sidebar-logo {
+  padding: 20px 20px 0;
+  margin-bottom: 28px;
+}
+
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--accent) 0%, #7b5ea7 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(79,142,255,0.3);
+}
+
+.logo-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.logo-sub {
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--text-3);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 10px;
+  flex: 1;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: all 0.18s;
+  text-align: left;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
+.nav-item:hover { background: var(--srf2); color: var(--text); }
+.nav-item.active { background: var(--accent-glow); color: var(--accent); }
+.nav-item.active .icon { filter: none; }
+
+.nav-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 10px;
+}
+
+.api-badge {
+  margin: 0 10px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 500;
+}
+
+.api-badge.ok { background: rgba(62,207,142,0.1); color: var(--success); }
+.api-badge.missing { background: rgba(255,92,92,0.1); color: var(--danger); }
+.api-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* ── Main Area ───────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.topbar {
+  height: var(--header-h);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.topbar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.topbar-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-left: auto;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* ── Panel visibility ────────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.22s ease both; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Compose Panel – two-column ─────────────────────────── */
+.compose-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 0;
+  height: 100%;
+}
+
+.compose-left {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 22px 40px;
+}
+
+.compose-right {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 24px 22px 40px;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+  background: var(--srf);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 18px 16px;
+  margin-bottom: 14px;
+}
+
+.card-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 12px;
+}
+
+/* ── Form Elements ───────────────────────────────────────── */
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+textarea, input[type="text"], input[type="password"] {
+  width: 100%;
+  background: var(--srf2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 12px 14px;
+  resize: vertical;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+textarea:focus, input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+textarea::placeholder, input::placeholder { color: var(--text-3); }
+
+/* ── Chips ───────────────────────────────────────────────── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border2);
+  background: var(--srf2);
+  color: var(--text-2);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.16s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+.chip:hover { color: var(--text); border-color: var(--text-3); }
+.chip.on {
+  background: rgba(79,142,255,0.14);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+
+.btn-generate {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 15px;
+  background: linear-gradient(135deg, var(--accent), #6fa0ff);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(79,142,255,0.32);
+  border-radius: var(--radius);
+  margin-top: 4px;
+}
+.btn-generate:hover { filter: brightness(1.1); box-shadow: 0 6px 24px rgba(79,142,255,0.42); }
+.btn-generate:active { filter: brightness(0.96); }
+.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; filter: none; box-shadow: none; }
+
+.btn-ghost {
+  padding: 8px 14px;
+  font-size: 13px;
+  background: var(--srf2);
+  color: var(--text-2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--text-3); }
+
+.btn-copy {
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--text-3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-copy:hover { color: var(--success); border-color: var(--success); }
+.btn-copy.done { color: var(--success); border-color: var(--success); background: rgba(62,207,142,0.08); }
+
+.btn-save {
+  padding: 12px 24px;
+  font-size: 14px;
+  background: linear-gradient(135deg, var(--success), #2db87a);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(62,207,142,0.25);
+}
+.btn-save:hover { filter: brightness(1.07); }
+
+/* ── Draft cards ─────────────────────────────────────────── */
+.draft-card {
+  background: var(--srf);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+  animation: fadeUp 0.28s ease both;
+}
+
+.draft-card:nth-child(1) { animation-delay: 0.04s; }
+.draft-card:nth-child(2) { animation-delay: 0.1s; }
+.draft-card:nth-child(3) { animation-delay: 0.16s; }
+
+.draft-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.draft-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.draft-textarea {
+  width: 100%;
+  background: var(--srf2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 11px 13px;
+  resize: vertical;
+  min-height: 88px;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.draft-textarea:focus { border-color: var(--accent); }
+
+.char-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.char-count {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--text-3);
+}
+.char-count.warn { color: #e0aa44; }
+.char-count.over { color: var(--danger); }
+
+/* ── Settings ────────────────────────────────────────────── */
+.settings-wrap { padding: 28px 28px 60px; max-width: 720px; }
+.setting-block { margin-bottom: 28px; }
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.info-box {
+  background: rgba(79,142,255,0.07);
+  border: 1px solid rgba(79,142,255,0.18);
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 13px;
+}
+
+.warn-box {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+  font-size: 13px;
+  color: #b89940;
+  line-height: 1.6;
+  margin-bottom: 13px;
+}
+
+.warn-box strong, .info-box strong {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  background: var(--srf3);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
+.input-row { margin-bottom: 13px; }
+
+.api-key-wrap { position: relative; }
+.api-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.example-item { position: relative; margin-bottom: 10px; }
+.example-del {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: none; border: none;
+  color: var(--text-3); cursor: pointer;
+  font-size: 17px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.16s;
+  -webkit-tap-highlight-color: transparent;
+}
+.example-del:hover { color: var(--danger); }
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* ── Tips Panel ──────────────────────────────────────────── */
+.tips-wrap { padding: 28px 28px 60px; max-width: 780px; }
+
+.tip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.tip-card {
+  background: var(--srf);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.tip-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  color: var(--text-3);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.tip-head {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tip-body {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.6;
+}
+
+.badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.badge-r { background: rgba(255,92,92,0.14); color: var(--danger); }
+.badge-g { background: rgba(62,207,142,0.12); color: var(--success); }
+.badge-b { background: rgba(79,142,255,0.12); color: var(--accent); }
+
+.safety-header {
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(79,142,255,0.06));
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.safety-icon { font-size: 28px; flex-shrink: 0; }
+.safety-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
+.safety-text strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 14px; }
+
+/* ── Loading state ───────────────────────────────────────── */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 60px 24px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 34px; height: 34px;
+  border: 3px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  min-height: 260px;
+  color: var(--text-3);
+  font-size: 13px;
+  text-align: center;
+  padding: 40px;
+}
+.empty-icon { font-size: 42px; opacity: 0.4; }
+.empty-hint { max-width: 240px; line-height: 1.65; }
+
+/* ── Keyboard shortcut hint ──────────────────────────────── */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--srf3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* ── Scrollbar (WebKit) ──────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--srf3); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ── Compact two-row options ─────────────────────────────── */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 14px 0;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">💬</div>
+      <div class="logo-name">Reply Assistant</div>
+      <div class="logo-sub">LinkedIn · Private</div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-panel="compose" onclick="switchPanel(this)">
+        <span class="icon">✍️</span> Verfassen
+      </button>
+      <button class="nav-item" data-panel="settings" onclick="switchPanel(this)">
+        <span class="icon">⚙️</span> Einstellungen
+      </button>
+      <button class="nav-item" data-panel="tips" onclick="switchPanel(this)">
+        <span class="icon">🛡️</span> Sicherheits-Tipps
+      </button>
+    </nav>
+
+    <div class="nav-divider"></div>
+    <div id="apiBadge" class="api-badge missing">
+      <span class="dot"></span>
+      <span id="apiBadgeText">Kein API-Key</span>
+    </div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="panelTitle">Antwort verfassen</div>
+      <div class="topbar-sub">
+        <span class="kbd">⌘ G</span>&nbsp;Generieren &nbsp;·&nbsp; <span class="kbd">⌘ K</span>&nbsp;Fokus
+      </div>
+    </div>
+
+    <!-- Content area -->
+    <div class="content" id="contentArea">
+
+      <!-- ── COMPOSE PANEL ── -->
+      <div id="panel-compose" class="panel active" style="height:100%;">
+        <div class="compose-grid" style="height:100%;">
+
+          <!-- Left: Input -->
+          <div class="compose-left">
+
+            <div class="card">
+              <div class="card-label">LinkedIn Post einfügen</div>
+              <textarea id="postInput" rows="6"
+                placeholder="Den Post oder Kommentar hier einfügen, auf den du antworten möchtest …"
+                oninput="updateGenBtn()"></textarea>
+            </div>
+
+            <div class="card">
+              <div class="card-label">Deine Perspektive</div>
+              <div class="chips" id="roleChips">
+                <div class="chip on" data-g="role" data-v="Geschäftsführer eines spezialisierten Chemieunternehmens (SEVESO-Betrieb)">Geschäftsführer</div>
+                <div class="chip" data-g="role" data-v="Branchenexperte für industrielle Abfallbehandlung und Umweltcompliance">Branchenexperte</div>
+                <div class="chip" data-g="role" data-v="Business Development und Netzwerkpflege">Netzwerk / BD</div>
+                <div class="chip" data-g="role" data-v="Persönliche Facheinschätzung">Persönlich</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-label">Tonalität</div>
+              <div class="chips" id="toneChips">
+                <div class="chip on" data-g="tone" data-v="sachlich und professionell">Sachlich</div>
+                <div class="chip" data-g="tone" data-v="engagiert und konstruktiv">Engagiert</div>
+                <div class="chip" data-g="tone" data-v="kritisch aber respektvoll">Kritisch</div>
+                <div class="chip" data-g="tone" data-v="zustimmend und wertschätzend">Zustimmend</div>
+                <div class="chip" data-g="tone" data-v="fragend und neugierig">Fragend</div>
+              </div>
+            </div>
+
+            <div class="options-grid">
+              <div class="card" style="margin-bottom:0;">
+                <div class="card-label">Sprache</div>
+                <div class="chips" id="langChips">
+                  <div class="chip on" data-g="lang" data-v="Deutsch">🇩🇪 Deutsch</div>
+                  <div class="chip" data-g="lang" data-v="Englisch">🇬🇧 Englisch</div>
+                  <div class="chip" data-g="lang" data-v="Niederländisch">🇳🇱 Niederl.</div>
+                </div>
+              </div>
+              <div class="card" style="margin-bottom:0;">
+                <div class="card-label">Länge</div>
+                <div class="chips" id="lengthChips">
+                  <div class="chip" data-g="length" data-v="sehr kurz (1–2 Sätze)">Kurz</div>
+                  <div class="chip on" data-g="length" data-v="mittel (3–4 Sätze)">Mittel</div>
+                  <div class="chip" data-g="length" data-v="ausführlich (5–7 Sätze)">Lang</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px;">
+              <div class="card-label">Zusatzkontext <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:11px;">(optional)</span></div>
+              <textarea id="extraCtx" rows="2"
+                placeholder="z.B. 'Ich kenne den Autor' oder 'Aktuell im selben Projekt tätig' …"></textarea>
+            </div>
+
+            <button class="btn btn-generate" id="genBtn" onclick="generate()" disabled>
+              ✨ 3 Entwürfe generieren
+            </button>
+
+          </div>
+
+          <!-- Right: Drafts -->
+          <div class="compose-right" id="draftsArea">
+            <div class="empty-state" id="emptyState">
+              <div class="empty-icon">✦</div>
+              <div class="empty-hint">Füge links einen LinkedIn-Post ein und klicke <strong>Generieren</strong>, um Antwort-Entwürfe zu erhalten.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── SETTINGS PANEL ── -->
+      <div id="panel-settings" class="panel">
+        <div class="settings-wrap">
+
+          <!-- API Key -->
+          <div class="setting-block">
+            <div class="section-title">🔑 Anthropic API-Key</div>
+            <div class="warn-box">
+              <strong>Wo bekommst du den Key?</strong>
+              Öffne <strong>console.anthropic.com</strong> → „API Keys" → „Create Key". Der Key beginnt mit <code>sk-ant-</code>. Er wird ausschließlich lokal in Safari gespeichert und nie übertragen.
+            </div>
+            <div class="input-row">
+              <label>API-Key</label>
+              <div class="api-key-wrap">
+                <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" oninput="saveKey()">
+                <button class="api-eye" onclick="toggleKey()">👁</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Style -->
+          <div class="setting-block">
+            <div class="section-title">🖊 Dein Schreibstil</div>
+            <div class="info-box">
+              Beschreibe deinen Stil präzise. Beispiel: <em>„Kurze direkte Sätze. Ich sieze konsequent. Kein Loben oder Buzzwords. Fachlich fundiert, keine Adjektivflut."</em>
+            </div>
+            <div class="input-row">
+              <label>Stil-Beschreibung (wird bei jedem Entwurf mitgegeben)</label>
+              <textarea id="styleDesc" rows="4"
+                placeholder="Mein LinkedIn-Schreibstil ist …"
+                oninput="saveSettings()"></textarea>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Examples -->
+          <div class="setting-block">
+            <div class="section-title">📝 Eigene Beispiel-Kommentare</div>
+            <div class="info-box">
+              <strong>Zeigen wirkt besser als Beschreiben.</strong>
+              Füge 3–5 eigene LinkedIn-Kommentare ein, die du gut findest. Der Assistent lernt direkt aus deiner echten Sprache.
+            </div>
+            <div id="examplesWrap"></div>
+            <button class="btn btn-ghost" onclick="addExample()" style="margin-top:4px;">
+              + Beispiel hinzufügen
+            </button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Personal context -->
+          <div class="setting-block">
+            <div class="section-title">👤 Persönlicher Kontext</div>
+            <div class="input-row">
+              <label>Dein Name / Titel</label>
+              <input type="text" id="userName"
+                placeholder="z.B. Max Mustermann, Geschäftsführer"
+                oninput="saveSettings()">
+            </div>
+            <div class="input-row">
+              <label>Unternehmen / Branche</label>
+              <input type="text" id="userCompany"
+                placeholder="z.B. Bredox B.V., industrielle Abfallbehandlung"
+                oninput="saveSettings()">
+            </div>
+          </div>
+
+          <div class="settings-footer">
+            <button class="btn btn-save" onclick="saveAll()">✓ Alles gespeichert</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── TIPS PANEL ── -->
+      <div id="panel-tips" class="panel">
+        <div class="tips-wrap">
+
+          <div class="safety-header">
+            <div class="safety-icon">🛡️</div>
+            <div class="safety-text">
+              <strong>Diese App greift niemals auf dein LinkedIn-Konto zu.</strong>
+              Du kopierst Posts hierher, ich generiere Entwürfe — du entscheidest und postest selbst. Kein Token, kein Session-Cookie, kein Automatisierungsrisiko.
+            </div>
+          </div>
+
+          <div class="section-title">Regeln für sicheres Engagement</div>
+
+          <div class="tip-grid">
+            <div class="tip-card">
+              <div class="tip-num">01</div>
+              <div class="tip-head">Kommentare dosieren <span class="badge badge-r">Kritisch</span></div>
+              <div class="tip-body">Maximal 10–15 Kommentare pro Tag, verteilt über den Tag. LinkedIn erkennt unnatürliche Aktivitätsmuster und drosselt die Reichweite oder schränkt Konten ein.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">02</div>
+              <div class="tip-head">Immer individualisieren <span class="badge badge-r">Kritisch</span></div>
+              <div class="tip-body">Ändere jeden Entwurf leicht ab – ein Satz, eine Formulierung. Identische Texte wirken als Spam-Signal, sowohl für den Algorithmus als auch für dein Netzwerk.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">03</div>
+              <div class="tip-head">Organisch mischen <span class="badge badge-g">Empfehlung</span></div>
+              <div class="tip-body">Nicht jeder Kommentar muss durchdacht sein. Kurze spontane Reaktionen halten dein Profil authentisch. Setze dieses Tool für wichtige, sichtbare Posts ein.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">04</div>
+              <div class="tip-head">Beste Zeiten <span class="badge badge-b">Info</span></div>
+              <div class="tip-body">Di–Do, 8–10 Uhr und 17–19 Uhr erzielen die höchste Sichtbarkeit auf LinkedIn. Kommentare in diesen Fenstern bekommen mehr organische Reichweite.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">05</div>
+              <div class="tip-head">Zeichenlimit <span class="badge badge-b">Info</span></div>
+              <div class="tip-body">Kommentare: max. <strong>1.250 Zeichen</strong>. Posts: max. <strong>3.000 Zeichen</strong>. Die App zeigt den Zähler direkt unter jedem Entwurf an.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">06</div>
+              <div class="tip-head">Verbindungsanfragen <span class="badge badge-b">Info</span></div>
+              <div class="tip-body">LinkedIn limitiert auf 100 Anfragen/Woche. Empfehlung: max. 20/Tag mit persönlicher Nachricht. Betrifft diese App zwar nicht, ist aber für dein Gesamtverhalten wichtig.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">07</div>
+              <div class="tip-head">Eigene Stimme schützen <span class="badge badge-g">Empfehlung</span></div>
+              <div class="tip-body">Nutze Stil-Beschreibung und Beispiele in den Einstellungen. Entwürfe, die deiner echten Sprache ähneln, stärken deine Reputation. KI-hafte Texte können deiner Marke schaden.</div>
+            </div>
+            <div class="tip-card">
+              <div class="tip-num">08</div>
+              <div class="tip-head">Auf Antworten reagieren <span class="badge badge-g">Empfehlung</span></div>
+              <div class="tip-body">Antworte auf Kommentare unter deinen Posts innerhalb der ersten Stunde – das boosted den Algorithmus erheblich. Qualität schlägt Quantität.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ─── State ─────────────────────────────────────────────────────────────────
+let examples = [];
+
+const panelTitles = {
+  compose:  'Antwort verfassen',
+  settings: 'Einstellungen',
+  tips:     'LinkedIn-Sicherheitstipps'
+};
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  updateApiStatus();
+  renderExamples();
+  updateGenBtn();
+
+  // Keyboard shortcuts (Magic Keyboard)
+  document.addEventListener('keydown', e => {
+    if (e.metaKey && e.key === 'g') { e.preventDefault(); generate(); }
+    if (e.metaKey && e.key === 'k') { e.preventDefault(); document.getElementById('postInput').focus(); }
+  });
+});
+
+// ─── Panel switching ────────────────────────────────────────────────────────
+function switchPanel(btn) {
+  const name = btn.dataset.panel;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('panelTitle').textContent = panelTitles[name];
+}
+
+// ─── Chip selection ─────────────────────────────────────────────────────────
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('chip') && e.target.dataset.g) {
+    const g = e.target.dataset.g;
+    document.querySelectorAll(`.chip[data-g="${g}"]`).forEach(c => c.classList.remove('on'));
+    e.target.classList.add('on');
+  }
+});
+
+function chipVal(group) {
+  const el = document.querySelector(`.chip.on[data-g="${group}"]`);
+  return el ? el.dataset.v : '';
+}
+
+// ─── Generate ───────────────────────────────────────────────────────────────
+function updateGenBtn() {
+  const has = document.getElementById('postInput').value.trim().length > 10;
+  const key = localStorage.getItem('li_api_key') || '';
+  document.getElementById('genBtn').disabled = !(has && key);
+}
+
+async function generate() {
+  const post    = document.getElementById('postInput').value.trim();
+  const extra   = document.getElementById('extraCtx').value.trim();
+  const apiKey  = localStorage.getItem('li_api_key') || '';
+  const style   = localStorage.getItem('li_style') || '';
+  const name    = localStorage.getItem('li_name') || '';
+  const company = localStorage.getItem('li_company') || '';
+  const exList  = JSON.parse(localStorage.getItem('li_examples') || '[]');
+
+  if (!post) return;
+  if (!apiKey) { alert('Bitte zuerst den Anthropic API-Key in den Einstellungen eintragen.'); return; }
+
+  const role   = chipVal('role');
+  const tone   = chipVal('tone');
+  const lang   = chipVal('lang');
+  const length = chipVal('length');
+
+  const draftsArea = document.getElementById('draftsArea');
+  draftsArea.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Entwürfe werden generiert …</span></div>`;
+
+  const systemParts = [
+    `Du bist ein professioneller LinkedIn-Kommunikationsassistent.`,
+    name    ? `Der Nutzer ist: ${name}.` : '',
+    company ? `Unternehmen/Branche: ${company}.` : '',
+    style   ? `\nSchreibstil des Nutzers:\n${style}` : '',
+    exList.length ? `\nBeispiel-Kommentare des Nutzers (lerne daraus):\n${exList.map((e,i)=>`[${i+1}] ${e}`).join('\n')}` : '',
+    `\nErstelle IMMER genau 3 voneinander verschiedene Antworten im folgenden JSON-Format – keine Prosa, kein Markdown drumherum:
+{"drafts":["Antwort 1","Antwort 2","Antwort 3"]}`
+  ].filter(Boolean).join('\n');
+
+  const userPrompt = [
+    `LinkedIn-Post:\n"""${post}"""`,
+    extra ? `Zusatzkontext: ${extra}` : '',
+    `Perspektive: ${role}`,
+    `Tonalität: ${tone}`,
+    `Sprache: ${lang}`,
+    `Länge: ${length}`,
+    `\nSchreibe die 3 Entwürfe jetzt. Antworte ausschließlich mit dem JSON-Objekt.`
+  ].filter(Boolean).join('\n');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        system: systemParts,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      const msg = data?.error?.message || 'Unbekannter Fehler';
+      draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">API-Fehler: ${msg}</div></div>`;
+      return;
+    }
+
+    const raw = data.content?.map(b => b.text || '').join('') || '';
+    let drafts = [];
+
+    try {
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      drafts = parsed.drafts || [];
+    } catch {
+      // Fallback: split by numbered list
+      drafts = raw.split(/\n(?=\d\.)/).map(s => s.replace(/^\d\.\s*/, '').trim()).filter(Boolean).slice(0, 3);
+    }
+
+    if (!drafts.length) {
+      draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">Konnte keine Entwürfe parsen. Bitte nochmal versuchen.</div></div>`;
+      return;
+    }
+
+    renderDrafts(drafts, draftsArea);
+
+  } catch (err) {
+    draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">Fehler: ${err.message}</div></div>`;
+  }
+}
+
+function renderDrafts(drafts, container) {
+  const limit = 1250;
+  container.innerHTML = '';
+
+  drafts.forEach((text, i) => {
+    const card = document.createElement('div');
+    card.className = 'draft-card';
+    card.innerHTML = `
+      <div class="draft-top">
+        <div class="draft-tag">Entwurf ${i + 1}</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-copy" id="copy${i}" onclick="copyDraft(${i})">Kopieren</button>
+        </div>
+      </div>
+      <textarea class="draft-textarea" id="draft${i}" rows="4" oninput="updateChar(${i})">${escHtml(text)}</textarea>
+      <div class="char-bar">
+        <span id="charCount${i}" class="char-count">0 / ${limit}</span>
+      </div>
+    `;
+    container.appendChild(card);
+    updateChar(i);
+  });
+}
+
+function updateChar(i) {
+  const ta = document.getElementById(`draft${i}`);
+  if (!ta) return;
+  const len = ta.value.length;
+  const limit = 1250;
+  const el = document.getElementById(`charCount${i}`);
+  el.textContent = `${len} / ${limit}`;
+  el.className = 'char-count' + (len > limit ? ' over' : len > limit * 0.85 ? ' warn' : '');
+}
+
+function copyDraft(i) {
+  const ta = document.getElementById(`draft${i}`);
+  if (!ta) return;
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.getElementById(`copy${i}`);
+    btn.textContent = '✓ Kopiert';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'Kopieren'; btn.classList.remove('done'); }, 2000);
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── API Key ────────────────────────────────────────────────────────────────
+function saveKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val) localStorage.setItem('li_api_key', val);
+  else localStorage.removeItem('li_api_key');
+  updateApiStatus();
+  updateGenBtn();
+}
+
+function toggleKey() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function updateApiStatus() {
+  const key = localStorage.getItem('li_api_key') || '';
+  const badge = document.getElementById('apiBadge');
+  const txt   = document.getElementById('apiBadgeText');
+  if (key && key.startsWith('sk-')) {
+    badge.className = 'api-badge ok';
+    txt.textContent = 'API aktiv';
+  } else {
+    badge.className = 'api-badge missing';
+    txt.textContent = 'Kein API-Key';
+  }
+}
+
+// ─── Settings persistence ────────────────────────────────────────────────────
+function saveSettings() {
+  localStorage.setItem('li_style',   document.getElementById('styleDesc').value);
+  localStorage.setItem('li_name',    document.getElementById('userName').value);
+  localStorage.setItem('li_company', document.getElementById('userCompany').value);
+}
+
+function saveAll() {
+  saveSettings();
+  saveExamples();
+  const btn = document.querySelector('.btn-save');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Gespeichert!';
+  setTimeout(() => btn.textContent = orig, 2000);
+}
+
+function loadAll() {
+  const key = localStorage.getItem('li_api_key') || '';
+  if (key) document.getElementById('apiKeyInput').value = key;
+  document.getElementById('styleDesc').value  = localStorage.getItem('li_style')   || '';
+  document.getElementById('userName').value   = localStorage.getItem('li_name')    || '';
+  document.getElementById('userCompany').value= localStorage.getItem('li_company') || '';
+  examples = JSON.parse(localStorage.getItem('li_examples') || '[]');
+}
+
+// ─── Examples ───────────────────────────────────────────────────────────────
+function renderExamples() {
+  const wrap = document.getElementById('examplesWrap');
+  wrap.innerHTML = '';
+  if (!examples.length) {
+    wrap.innerHTML = '<p style="font-size:13px;color:var(--text-3);margin-bottom:10px;">Noch keine Beispiele hinzugefügt.</p>';
+    return;
+  }
+  examples.forEach((ex, i) => {
+    const div = document.createElement('div');
+    div.className = 'example-item';
+    div.innerHTML = `
+      <textarea class="draft-textarea" rows="3"
+        style="padding-right:40px;"
+        oninput="examples[${i}]=this.value;saveExamples()">${escHtml(ex)}</textarea>
+      <button class="example-del" onclick="removeExample(${i})">✕</button>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function addExample() {
+  examples.push('');
+  saveExamples();
+  renderExamples();
+  // Focus last textarea
+  const tas = document.querySelectorAll('#examplesWrap textarea');
+  if (tas.length) tas[tas.length - 1].focus();
+}
+
+function removeExample(i) {
+  examples.splice(i, 1);
+  saveExamples();
+  renderExamples();
+}
+
+function saveExamples() {
+  localStorage.setItem('li_examples', JSON.stringify(examples));
+}
+</script>
+</body>
+</html>
