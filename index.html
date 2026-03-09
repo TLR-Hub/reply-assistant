@@ -5,661 +5,332 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Reply Assistant</title>
+<title>Reply Assistant v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-/* ── Reset & Base ────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 :root {
-  --bg:        #111318;
-  --srf:       #191d27;
-  --srf2:      #1f2435;
-  --srf3:      #252a3d;
-  --border:    rgba(255,255,255,0.07);
-  --border2:   rgba(255,255,255,0.12);
-  --accent:    #4f8eff;
-  --accent-glow: rgba(79,142,255,0.18);
-  --gold:      #c9a84c;
-  --gold-soft: rgba(201,168,76,0.12);
-  --success:   #3ecf8e;
-  --danger:    #ff5c5c;
-  --text:      #e2e6f3;
-  --text-2:    #8891b0;
-  --text-3:    #4a5272;
-  --sidebar-w: 220px;
-  --header-h:  62px;
-  --safe-b:    env(safe-area-inset-bottom, 0px);
-  --radius:    12px;
-  --radius-sm: 8px;
+  --bg:#111318; --srf:#191d27; --srf2:#1f2435; --srf3:#252a3d;
+  --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+  --accent:#4f8eff; --accent-glow:rgba(79,142,255,0.16);
+  --gold:#c9a84c; --gold-soft:rgba(201,168,76,0.11);
+  --success:#3ecf8e; --danger:#ff5c5c; --purple:#9b72cf;
+  --text:#e2e6f3; --text-2:#8891b0; --text-3:#4a5272;
+  --sidebar-w:214px; --header-h:60px;
+  --radius:12px; --radius-sm:8px;
 }
-
-html { height: 100%; -webkit-text-size-adjust: 100%; }
-
+html { height:100%; -webkit-text-size-adjust:100%; }
 body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  height: 100%;
-  overflow: hidden;
-  font-size: 15px;
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
+  font-family:'IBM Plex Sans',sans-serif;
+  background:var(--bg); color:var(--text);
+  height:100%; overflow:hidden; font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
 }
+.shell { display:flex; height:100dvh; height:100vh; }
 
-/* ── Layout Shell ────────────────────────────────────────── */
-.shell {
-  display: flex;
-  height: 100dvh;
-  height: 100vh; /* fallback */
-}
-
-/* ── Sidebar ─────────────────────────────────────────────── */
+/* ── Sidebar ── */
 .sidebar {
-  width: var(--sidebar-w);
-  background: var(--srf);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  padding: 0 0 calc(16px + var(--safe-b));
+  width:var(--sidebar-w); background:var(--srf);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px;
 }
-
-.sidebar-logo {
-  padding: 20px 20px 0;
-  margin-bottom: 28px;
-}
-
+.sidebar-logo { padding:18px 18px 0; margin-bottom:22px; }
 .logo-mark {
-  width: 38px;
-  height: 38px;
-  background: linear-gradient(135deg, var(--accent) 0%, #7b5ea7 100%);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 19px;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 14px rgba(79,142,255,0.3);
+  width:36px; height:36px;
+  background:linear-gradient(135deg,var(--accent),#7b5ea7);
+  border-radius:10px; display:flex; align-items:center;
+  justify-content:center; font-size:18px; margin-bottom:9px;
+  box-shadow:0 4px 14px rgba(79,142,255,0.28);
 }
-
-.logo-name {
-  font-family: 'Playfair Display', serif;
-  font-size: 17px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.2;
-}
-
-.logo-sub {
-  font-size: 10px;
-  font-weight: 300;
-  color: var(--text-3);
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  margin-top: 2px;
-}
-
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 0 10px;
-  flex: 1;
-}
-
+.logo-name { font-family:'Playfair Display',serif; font-size:16px; font-weight:500; color:var(--text); line-height:1.2; }
+.logo-sub { font-size:9px; font-weight:300; color:var(--text-3); letter-spacing:1.4px; text-transform:uppercase; margin-top:2px; }
+.nav { display:flex; flex-direction:column; gap:3px; padding:0 9px; flex:1; }
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  font-family: 'IBM Plex Sans', sans-serif;
-  transition: all 0.18s;
-  text-align: left;
-  width: 100%;
-  -webkit-tap-highlight-color: transparent;
+  display:flex; align-items:center; gap:10px; padding:10px 13px;
+  border-radius:var(--radius-sm); color:var(--text-2); font-size:13.5px;
+  font-weight:500; cursor:pointer; border:none; background:transparent;
+  font-family:'IBM Plex Sans',sans-serif; transition:all 0.18s;
+  text-align:left; width:100%; -webkit-tap-highlight-color:transparent;
 }
-
-.nav-item .icon { font-size: 17px; width: 22px; text-align: center; }
-.nav-item:hover { background: var(--srf2); color: var(--text); }
-.nav-item.active { background: var(--accent-glow); color: var(--accent); }
-.nav-item.active .icon { filter: none; }
-
-.nav-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 10px 10px;
-}
-
+.nav-item .icon { font-size:16px; width:20px; text-align:center; }
+.nav-item:hover { background:var(--srf2); color:var(--text); }
+.nav-item.active { background:var(--accent-glow); color:var(--accent); }
+.nav-divider { height:1px; background:var(--border); margin:8px 9px; }
 .api-badge {
-  margin: 0 10px;
-  padding: 9px 14px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 500;
+  margin:0 9px; padding:8px 13px; border-radius:var(--radius-sm);
+  font-size:11.5px; display:flex; align-items:center; gap:7px; font-weight:500;
 }
+.api-badge.ok { background:rgba(62,207,142,0.1); color:var(--success); }
+.api-badge.missing { background:rgba(255,92,92,0.1); color:var(--danger); }
+.dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; }
 
-.api-badge.ok { background: rgba(62,207,142,0.1); color: var(--success); }
-.api-badge.missing { background: rgba(255,92,92,0.1); color: var(--danger); }
-.api-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-
-/* ── Main Area ───────────────────────────────────────────── */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
+/* ── Main ── */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
 .topbar {
-  height: var(--header-h);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 28px;
-  flex-shrink: 0;
-  gap: 12px;
+  height:var(--header-h); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; flex-shrink:0; gap:10px;
 }
+.topbar-title { font-family:'Playfair Display',serif; font-size:19px; font-weight:500; color:var(--text); }
+.topbar-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.kbd { font-family:'IBM Plex Mono',monospace; font-size:10px; background:var(--srf3); border:1px solid var(--border2); border-radius:4px; padding:2px 6px; color:var(--text-3); }
+.content { flex:1; overflow:hidden; }
 
-.topbar-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--text);
-}
+/* ── Panels ── */
+.panel { display:none; height:100%; }
+.panel.active { display:flex; flex-direction:column; animation:fadeUp 0.2s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-.topbar-sub {
-  font-size: 12px;
-  color: var(--text-3);
-  margin-left: auto;
-  font-weight: 300;
-  letter-spacing: 0.3px;
-}
+/* ── Compose: two columns ── */
+.compose-grid { display:grid; grid-template-columns:1fr 1fr; height:100%; overflow:hidden; }
+.compose-left { border-right:1px solid var(--border); overflow-y:auto; padding:20px 18px 60px; -webkit-overflow-scrolling:touch; }
+.compose-right { overflow-y:auto; padding:20px 18px 60px; -webkit-overflow-scrolling:touch; position:relative; }
 
-.content {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
+/* ── Cards ── */
+.card { background:var(--srf); border:1px solid var(--border); border-radius:var(--radius); padding:15px 15px 13px; margin-bottom:12px; }
+.card-label { font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-3); margin-bottom:10px; }
 
-/* ── Panel visibility ────────────────────────────────────── */
-.panel { display: none; }
-.panel.active { display: block; animation: fadeUp 0.22s ease both; }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Compose Panel – two-column ─────────────────────────── */
-.compose-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto;
-  gap: 0;
-  height: 100%;
-}
-
-.compose-left {
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 24px 22px 40px;
-}
-
-.compose-right {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 24px 22px 40px;
-}
-
-/* ── Cards ───────────────────────────────────────────────── */
-.card {
-  background: var(--srf);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px 18px 16px;
-  margin-bottom: 14px;
-}
-
-.card-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-bottom: 12px;
-}
-
-/* ── Form Elements ───────────────────────────────────────── */
-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-2);
-  margin-bottom: 6px;
-}
-
+/* ── Inputs ── */
 textarea, input[type="text"], input[type="password"] {
-  width: 100%;
-  background: var(--srf2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 14px;
-  line-height: 1.6;
-  padding: 12px 14px;
-  resize: vertical;
-  transition: border-color 0.18s, box-shadow 0.18s;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
+  width:100%; background:var(--srf2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif; font-size:14px; line-height:1.6;
+  padding:11px 13px; resize:vertical; outline:none;
+  -webkit-appearance:none; appearance:none;
+  transition:border-color 0.18s, box-shadow 0.18s;
 }
+textarea:focus, input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+textarea::placeholder, input::placeholder { color:var(--text-3); }
+label { display:block; font-size:12px; font-weight:500; color:var(--text-2); margin-bottom:5px; }
 
-textarea:focus, input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
+/* ── Image upload ── */
+.upload-area {
+  border:2px dashed var(--border2); border-radius:var(--radius-sm);
+  background:var(--srf2); padding:16px; text-align:center;
+  cursor:pointer; transition:all 0.2s; position:relative;
+  margin-top:10px;
 }
-
-textarea::placeholder, input::placeholder { color: var(--text-3); }
-
-/* ── Chips ───────────────────────────────────────────────── */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+.upload-area:hover { border-color:var(--accent); background:rgba(79,142,255,0.05); }
+.upload-area.has-image { border-style:solid; border-color:var(--success); padding:8px; }
+.upload-area input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-label { font-size:12px; color:var(--text-3); pointer-events:none; }
+.upload-label .icon { font-size:22px; display:block; margin-bottom:4px; }
+.upload-preview { width:100%; border-radius:6px; display:block; max-height:120px; object-fit:cover; }
+.upload-clear {
+  position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.6);
+  border:none; color:#fff; border-radius:50%; width:22px; height:22px;
+  font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:background 0.18s; z-index:2;
 }
+.upload-clear:hover { background:var(--danger); }
 
+/* ── Chips ── */
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
 .chip {
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border2);
-  background: var(--srf2);
-  color: var(--text-2);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 13px;
-  font-weight: 400;
-  cursor: pointer;
-  transition: all 0.16s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-  white-space: nowrap;
+  padding:6px 13px; border-radius:999px; border:1px solid var(--border2);
+  background:var(--srf2); color:var(--text-2);
+  font-family:'IBM Plex Sans',sans-serif; font-size:12.5px; font-weight:400;
+  cursor:pointer; transition:all 0.16s; user-select:none; white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
 }
+.chip:hover { color:var(--text); border-color:var(--text-3); }
+.chip.on { background:rgba(79,142,255,0.14); border-color:var(--accent); color:var(--accent); font-weight:500; }
+.chip-hint { font-size:11px; color:var(--text-3); margin-top:5px; font-style:italic; }
 
-.chip:hover { color: var(--text); border-color: var(--text-3); }
-.chip.on {
-  background: rgba(79,142,255,0.14);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 500;
-}
+/* ── Options grid ── */
+.options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
-/* ── Buttons ─────────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-}
-
+/* ── Buttons ── */
 .btn-generate {
-  width: 100%;
-  padding: 15px 20px;
-  font-size: 15px;
-  background: linear-gradient(135deg, var(--accent), #6fa0ff);
-  color: #fff;
-  box-shadow: 0 4px 18px rgba(79,142,255,0.32);
-  border-radius: var(--radius);
-  margin-top: 4px;
+  width:100%; padding:13px 18px; font-size:14.5px; font-weight:600;
+  background:linear-gradient(135deg,var(--accent),#6fa0ff); color:#fff;
+  box-shadow:0 4px 18px rgba(79,142,255,0.3); border-radius:var(--radius);
+  border:none; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+  margin-top:4px; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.btn-generate:hover { filter: brightness(1.1); box-shadow: 0 6px 24px rgba(79,142,255,0.42); }
-.btn-generate:active { filter: brightness(0.96); }
-.btn-generate:disabled { opacity: 0.45; cursor: not-allowed; filter: none; box-shadow: none; }
+.btn-generate:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-generate:active { transform:translateY(0); }
+.btn-generate:disabled { opacity:0.4; cursor:not-allowed; filter:none; transform:none; box-shadow:none; }
 
-.btn-ghost {
-  padding: 8px 14px;
-  font-size: 13px;
-  background: var(--srf2);
-  color: var(--text-2);
-  border: 1px solid var(--border2);
+.btn-edit {
+  padding:5px 12px; font-size:12px; font-weight:600;
+  background:rgba(79,142,255,0.12); color:var(--accent);
+  border:1px solid rgba(79,142,255,0.3); border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif; cursor:pointer; transition:all 0.18s;
 }
-.btn-ghost:hover { color: var(--text); border-color: var(--text-3); }
+.btn-edit:hover { background:rgba(79,142,255,0.2); border-color:var(--accent); }
 
 .btn-copy {
-  padding: 6px 13px;
-  font-size: 12px;
-  font-weight: 500;
-  background: transparent;
-  color: var(--text-3);
-  border: 1px solid var(--border2);
-  border-radius: 6px;
-  font-family: 'IBM Plex Sans', sans-serif;
-  cursor: pointer;
-  transition: all 0.18s;
+  padding:5px 12px; font-size:12px; font-weight:500;
+  background:transparent; color:var(--text-3); border:1px solid var(--border2);
+  border-radius:6px; font-family:'IBM Plex Sans',sans-serif;
+  cursor:pointer; transition:all 0.18s;
 }
-.btn-copy:hover { color: var(--success); border-color: var(--success); }
-.btn-copy.done { color: var(--success); border-color: var(--success); background: rgba(62,207,142,0.08); }
+.btn-copy:hover { color:var(--success); border-color:var(--success); }
+.btn-copy.done { color:var(--success); border-color:var(--success); background:rgba(62,207,142,0.08); }
+
+.btn-spellcheck {
+  display:flex; align-items:center; gap:8px; padding:12px 20px;
+  font-size:14px; font-weight:600; border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--purple),#7b5ea7); color:#fff;
+  border:none; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;
+  box-shadow:0 4px 14px rgba(155,114,207,0.3); transition:all 0.2s;
+}
+.btn-spellcheck:hover { filter:brightness(1.1); transform:translateY(-1px); }
+.btn-spellcheck:active { transform:translateY(0); }
+.btn-spellcheck:disabled { opacity:0.4; cursor:not-allowed; filter:none; transform:none; }
+
+.btn-back {
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  font-size:13px; font-weight:500; border-radius:var(--radius-sm);
+  background:var(--srf2); color:var(--text-2); border:1px solid var(--border2);
+  cursor:pointer; font-family:'IBM Plex Sans',sans-serif; transition:all 0.18s;
+}
+.btn-back:hover { color:var(--text); border-color:var(--text-3); }
+
+.btn-ghost {
+  padding:8px 13px; font-size:13px; font-weight:600;
+  background:var(--srf2); color:var(--text-2); border:1px solid var(--border2);
+  border-radius:var(--radius-sm); cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif; transition:all 0.18s;
+}
+.btn-ghost:hover { color:var(--text); border-color:var(--text-3); }
 
 .btn-save {
-  padding: 12px 24px;
-  font-size: 14px;
-  background: linear-gradient(135deg, var(--success), #2db87a);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(62,207,142,0.25);
+  padding:11px 22px; font-size:14px; font-weight:600;
+  background:linear-gradient(135deg,var(--success),#2db87a); color:#fff;
+  border:none; border-radius:var(--radius-sm); cursor:pointer;
+  font-family:'IBM Plex Sans',sans-serif; transition:all 0.18s;
+  box-shadow:0 4px 14px rgba(62,207,142,0.22);
 }
-.btn-save:hover { filter: brightness(1.07); }
+.btn-save:hover { filter:brightness(1.07); }
 
-/* ── Draft cards ─────────────────────────────────────────── */
+/* ── Draft cards ── */
 .draft-card {
-  background: var(--srf);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 14px;
-  animation: fadeUp 0.28s ease both;
+  background:var(--srf); border:1px solid var(--border);
+  border-radius:var(--radius); padding:14px; margin-bottom:12px;
+  animation:fadeUp 0.28s ease both;
 }
+.draft-card:nth-child(1){animation-delay:.04s}
+.draft-card:nth-child(2){animation-delay:.1s}
+.draft-card:nth-child(3){animation-delay:.16s}
 
-.draft-card:nth-child(1) { animation-delay: 0.04s; }
-.draft-card:nth-child(2) { animation-delay: 0.1s; }
-.draft-card:nth-child(3) { animation-delay: 0.16s; }
-
-.draft-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.draft-tag {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--accent);
-  font-family: 'IBM Plex Mono', monospace;
-}
+.draft-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.draft-tag { font-size:10px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--accent); font-family:'IBM Plex Mono',monospace; }
+.draft-actions { display:flex; gap:6px; }
 
 .draft-textarea {
-  width: 100%;
-  background: var(--srf2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 14px;
-  line-height: 1.65;
-  padding: 11px 13px;
-  resize: vertical;
-  min-height: 88px;
-  outline: none;
-  transition: border-color 0.18s;
+  width:100%; background:var(--srf2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; line-height:1.65;
+  padding:10px 12px; resize:vertical; min-height:80px; outline:none;
+  transition:border-color 0.18s;
 }
-.draft-textarea:focus { border-color: var(--accent); }
+.draft-textarea:focus { border-color:var(--accent); }
 
-.char-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 6px;
+.char-bar { display:flex; justify-content:flex-end; margin-top:5px; }
+.char-count { font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--text-3); }
+.char-count.warn { color:#e0aa44; }
+.char-count.over { color:var(--danger); }
+
+/* ── Edit panel (right column overlay) ── */
+.edit-panel {
+  display:none; flex-direction:column; gap:14px;
+  animation:fadeUp 0.22s ease both;
 }
+.edit-panel.active { display:flex; }
 
-.char-count {
-  font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--text-3);
+.edit-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:4px;
 }
-.char-count.warn { color: #e0aa44; }
-.char-count.over { color: var(--danger); }
+.edit-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:500; color:var(--text); }
 
-/* ── Settings ────────────────────────────────────────────── */
-.settings-wrap { padding: 28px 28px 60px; max-width: 720px; }
-.setting-block { margin-bottom: 28px; }
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--text);
-  margin-bottom: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+.edit-main-textarea {
+  width:100%; background:var(--srf2); border:1px solid var(--border2);
+  border-radius:var(--radius-sm); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif; font-size:14px; line-height:1.7;
+  padding:13px 14px; resize:vertical; min-height:160px; outline:none;
+  transition:border-color 0.18s, box-shadow 0.18s;
+}
+.edit-main-textarea:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+
+.spellcheck-results { margin-top:6px; }
+.spellcheck-label {
+  font-size:10px; font-weight:600; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--purple); font-family:'IBM Plex Mono',monospace; margin-bottom:10px; display:block;
 }
 
-.info-box {
-  background: rgba(79,142,255,0.07);
-  border: 1px solid rgba(79,142,255,0.18);
-  border-radius: var(--radius-sm);
-  padding: 12px 15px;
-  font-size: 13px;
-  color: var(--text-2);
-  line-height: 1.6;
-  margin-bottom: 13px;
+.corrected-card {
+  background:var(--srf); border:1px solid rgba(155,114,207,0.2);
+  border-radius:var(--radius); padding:13px; margin-bottom:11px;
+  animation:fadeUp 0.25s ease both;
 }
+.corrected-card:nth-child(2){animation-delay:.06s}
+.corrected-card:nth-child(3){animation-delay:.12s}
+.corrected-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.corrected-tag { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--purple); font-family:'IBM Plex Mono',monospace; }
 
-.warn-box {
-  background: rgba(201,168,76,0.08);
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: var(--radius-sm);
-  padding: 12px 15px;
-  font-size: 13px;
-  color: #b89940;
-  line-height: 1.6;
-  margin-bottom: 13px;
+.corrected-textarea {
+  width:100%; background:var(--srf2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; line-height:1.65;
+  padding:10px 12px; resize:vertical; min-height:75px; outline:none;
+  transition:border-color 0.18s;
 }
+.corrected-textarea:focus { border-color:var(--purple); }
 
-.warn-box strong, .info-box strong {
-  display: block;
-  margin-bottom: 3px;
-  font-weight: 600;
-}
-
-code {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  background: var(--srf3);
-  padding: 1px 5px;
-  border-radius: 4px;
-  color: var(--accent);
-}
-
-.input-row { margin-bottom: 13px; }
-
-.api-key-wrap { position: relative; }
-.api-eye {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--text-3);
-  cursor: pointer;
-  font-size: 15px;
-  padding: 4px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.example-item { position: relative; margin-bottom: 10px; }
-.example-del {
-  position: absolute;
-  top: 10px; right: 10px;
-  background: none; border: none;
-  color: var(--text-3); cursor: pointer;
-  font-size: 17px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: color 0.16s;
-  -webkit-tap-highlight-color: transparent;
-}
-.example-del:hover { color: var(--danger); }
-
-.settings-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-
-/* ── Tips Panel ──────────────────────────────────────────── */
-.tips-wrap { padding: 28px 28px 60px; max-width: 780px; }
-
-.tip-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.tip-card {
-  background: var(--srf);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-}
-
-.tip-num {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px;
-  color: var(--text-3);
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.tip-head {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.tip-body {
-  font-size: 13px;
-  color: var(--text-2);
-  line-height: 1.6;
-}
-
-.badge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.badge-r { background: rgba(255,92,92,0.14); color: var(--danger); }
-.badge-g { background: rgba(62,207,142,0.12); color: var(--success); }
-.badge-b { background: rgba(79,142,255,0.12); color: var(--accent); }
-
-.safety-header {
-  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(79,142,255,0.06));
-  border: 1px solid rgba(201,168,76,0.2);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-}
-.safety-icon { font-size: 28px; flex-shrink: 0; }
-.safety-text { font-size: 13px; color: var(--text-2); line-height: 1.6; }
-.safety-text strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 14px; }
-
-/* ── Loading state ───────────────────────────────────────── */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 60px 24px;
-  color: var(--text-2);
-  font-size: 14px;
-}
-
-.spinner {
-  width: 34px; height: 34px;
-  border: 3px solid var(--border2);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Empty state ─────────────────────────────────────────── */
+/* ── Empty / loading states ── */
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  height: 100%;
-  min-height: 260px;
-  color: var(--text-3);
-  font-size: 13px;
-  text-align: center;
-  padding: 40px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:12px; min-height:260px; color:var(--text-3); font-size:13px;
+  text-align:center; padding:40px;
 }
-.empty-icon { font-size: 42px; opacity: 0.4; }
-.empty-hint { max-width: 240px; line-height: 1.65; }
+.empty-icon { font-size:38px; opacity:0.35; }
+.empty-hint { max-width:230px; line-height:1.65; }
 
-/* ── Keyboard shortcut hint ──────────────────────────────── */
-.kbd {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  color: var(--text-3);
-  background: var(--srf3);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  padding: 2px 6px;
+.loading-state {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:13px; padding:60px 24px; color:var(--text-2); font-size:13.5px;
 }
+.spinner { width:30px; height:30px; border:3px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.75s linear infinite; }
+.spinner.purple { border-top-color:var(--purple); }
+@keyframes spin { to{transform:rotate(360deg)} }
 
-/* ── Scrollbar (WebKit) ──────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--srf3); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+/* ── Settings ── */
+.settings-wrap { padding:24px 26px 60px; max-width:680px; overflow-y:auto; height:100%; }
+.section-title { font-family:'Playfair Display',serif; font-size:19px; font-weight:500; color:var(--text); margin-bottom:13px; padding-bottom:9px; border-bottom:1px solid var(--border); }
+.info-box { background:rgba(79,142,255,0.07); border:1px solid rgba(79,142,255,0.18); border-radius:var(--radius-sm); padding:11px 14px; font-size:13px; color:var(--text-2); line-height:1.6; margin-bottom:12px; }
+.warn-box { background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2); border-radius:var(--radius-sm); padding:11px 14px; font-size:13px; color:#b89940; line-height:1.6; margin-bottom:12px; }
+.input-row { margin-bottom:12px; }
+code { font-family:'IBM Plex Mono',monospace; font-size:12px; background:var(--srf3); padding:1px 5px; border-radius:4px; color:var(--accent); }
+.api-key-wrap { position:relative; }
+.api-eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--text-3); cursor:pointer; font-size:14px; padding:4px; }
+.example-item { position:relative; margin-bottom:9px; }
+.example-del { position:absolute; top:9px; right:9px; background:none; border:none; color:var(--text-3); cursor:pointer; font-size:16px; padding:2px 5px; border-radius:4px; transition:color 0.16s; }
+.example-del:hover { color:var(--danger); }
+.divider { height:1px; background:var(--border); margin:18px 0; }
+.settings-footer { display:flex; justify-content:flex-end; margin-top:20px; }
 
-/* ── Compact two-row options ─────────────────────────────── */
-.options-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
+/* ── Tips ── */
+.tips-wrap { padding:24px 26px 60px; max-width:720px; overflow-y:auto; height:100%; }
+.tip-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:13px; }
+.tip-card { background:var(--srf); border:1px solid var(--border); border-radius:var(--radius); padding:15px; }
+.tip-num { font-family:'Playfair Display',serif; font-size:28px; color:var(--text-3); line-height:1; margin-bottom:6px; }
+.tip-head { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.tip-body { font-size:12.5px; color:var(--text-2); line-height:1.55; }
+.badge { font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; letter-spacing:.5px; text-transform:uppercase; font-family:'IBM Plex Mono',monospace; }
+.badge-r { background:rgba(255,92,92,0.14); color:var(--danger); }
+.badge-g { background:rgba(62,207,142,0.12); color:var(--success); }
+.badge-b { background:rgba(79,142,255,0.12); color:var(--accent); }
+.safety-header { background:linear-gradient(135deg,rgba(201,168,76,0.07),rgba(79,142,255,0.05)); border:1px solid rgba(201,168,76,0.18); border-radius:var(--radius); padding:15px 17px; margin-bottom:16px; display:flex; align-items:flex-start; gap:12px; }
+.safety-icon { font-size:24px; flex-shrink:0; }
+.safety-text { font-size:13px; color:var(--text-2); line-height:1.6; }
+.safety-text strong { color:var(--text); display:block; margin-bottom:2px; font-size:13.5px; }
 
-.divider {
-  height: 1px;
-  background: var(--border);
-  margin: 14px 0;
-}
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--srf3); border-radius:99px; }
 </style>
 </head>
 <body>
@@ -670,9 +341,8 @@ code {
     <div class="sidebar-logo">
       <div class="logo-mark">💬</div>
       <div class="logo-name">Reply Assistant</div>
-      <div class="logo-sub">LinkedIn · Private</div>
+      <div class="logo-sub">LinkedIn · v2</div>
     </div>
-
     <nav class="nav">
       <button class="nav-item active" data-panel="compose" onclick="switchPanel(this)">
         <span class="icon">✍️</span> Verfassen
@@ -681,10 +351,9 @@ code {
         <span class="icon">⚙️</span> Einstellungen
       </button>
       <button class="nav-item" data-panel="tips" onclick="switchPanel(this)">
-        <span class="icon">🛡️</span> Sicherheits-Tipps
+        <span class="icon">🛡️</span> Sicherheitstipps
       </button>
     </nav>
-
     <div class="nav-divider"></div>
     <div id="apiBadge" class="api-badge missing">
       <span class="dot"></span>
@@ -695,64 +364,102 @@ code {
   <!-- ── Main ── -->
   <div class="main">
 
-    <!-- Topbar -->
     <div class="topbar">
       <div class="topbar-title" id="panelTitle">Antwort verfassen</div>
-      <div class="topbar-sub">
-        <span class="kbd">⌘ G</span>&nbsp;Generieren &nbsp;·&nbsp; <span class="kbd">⌘ K</span>&nbsp;Fokus
+      <div class="topbar-right">
+        <span class="kbd">⌘G</span><span style="font-size:11px;color:var(--text-3);">Generieren</span>
+        &nbsp;
+        <span class="kbd">⌘K</span><span style="font-size:11px;color:var(--text-3);">Fokus</span>
       </div>
     </div>
 
-    <!-- Content area -->
-    <div class="content" id="contentArea">
+    <div class="content">
 
-      <!-- ── COMPOSE PANEL ── -->
-      <div id="panel-compose" class="panel active" style="height:100%;">
-        <div class="compose-grid" style="height:100%;">
+      <!-- ════════════════ COMPOSE PANEL ════════════════ -->
+      <div id="panel-compose" class="panel active">
+        <div class="compose-grid">
 
-          <!-- Left: Input -->
+          <!-- LEFT: Input -->
           <div class="compose-left">
 
             <div class="card">
-              <div class="card-label">LinkedIn Post einfügen</div>
-              <textarea id="postInput" rows="6"
-                placeholder="Den Post oder Kommentar hier einfügen, auf den du antworten möchtest …"
+              <div class="card-label">LinkedIn Post — Text</div>
+              <textarea id="postInput" rows="5"
+                placeholder="LinkedIn-Post hier einfügen …"
                 oninput="updateGenBtn()"></textarea>
+
+              <!-- Image upload -->
+              <div style="margin-top:10px;">
+                <div class="card-label" style="margin-bottom:6px;">… oder Screenshot hochladen</div>
+                <div class="upload-area" id="uploadArea" onclick="triggerUpload()">
+                  <input type="file" id="imageInput" accept="image/*" onchange="handleImage(event)">
+                  <div id="uploadPlaceholder">
+                    <span class="upload-label">
+                      <span class="icon">🖼️</span>
+                      Screenshot antippen zum Hochladen
+                    </span>
+                  </div>
+                  <img id="uploadPreview" class="upload-preview" style="display:none;">
+                  <button class="upload-clear" id="uploadClear" style="display:none;" onclick="clearImage(event)">✕</button>
+                </div>
+              </div>
             </div>
 
             <div class="card">
               <div class="card-label">Deine Perspektive</div>
-              <div class="chips" id="roleChips">
-                <div class="chip on" data-g="role" data-v="Geschäftsführer eines spezialisierten Chemieunternehmens (SEVESO-Betrieb)">Geschäftsführer</div>
+              <div class="chips">
+                <div class="chip on" data-g="role" data-v="Geschäftsführer eines spezialisierten Chemieunternehmens (SEVESO-Betrieb, NL/DE)">Geschäftsführer</div>
                 <div class="chip" data-g="role" data-v="Branchenexperte für industrielle Abfallbehandlung und Umweltcompliance">Branchenexperte</div>
-                <div class="chip" data-g="role" data-v="Business Development und Netzwerkpflege">Netzwerk / BD</div>
-                <div class="chip" data-g="role" data-v="Persönliche Facheinschätzung">Persönlich</div>
+                <div class="chip" data-g="role" data-v="Persönliche Facheinschätzung als erfahrener Manager">Persönlich</div>
               </div>
             </div>
 
             <div class="card">
-              <div class="card-label">Tonalität</div>
+              <div class="card-label">Tonalität & Antwortstil</div>
               <div class="chips" id="toneChips">
-                <div class="chip on" data-g="tone" data-v="sachlich und professionell">Sachlich</div>
-                <div class="chip" data-g="tone" data-v="engagiert und konstruktiv">Engagiert</div>
-                <div class="chip" data-g="tone" data-v="kritisch aber respektvoll">Kritisch</div>
-                <div class="chip" data-g="tone" data-v="zustimmend und wertschätzend">Zustimmend</div>
-                <div class="chip" data-g="tone" data-v="fragend und neugierig">Fragend</div>
+                <div class="chip on" data-g="tone"
+                  data-v="sachlich und professionell — faktenbasiert, keine Floskeln"
+                  data-hint="">Sachlich</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="engagiert und zustimmend, mit Wiedererkennung — beginne mit dem Gefühl 'Das kenne ich genau …', zeige echte Resonanz"
+                  data-hint="„Das kenne ich genau …"">Engagiert</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="Überraschung und kognitive Dissonanz — beginne mit 'Das habe ich so noch nicht gesehen …', führe zu einer erhellenden Erkenntnis"
+                  data-hint="„Das habe ich so noch nicht gesehen …"">Überraschung</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="Bewunderung und Respekt — beginne mit 'Das hätte ich nicht gedacht, dass das geht …', zeige echte Anerkennung"
+                  data-hint="„Das hätte ich nicht gedacht …"">Bewunderung</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="fragend und neugierig — stelle eine substantielle Rückfrage die zum Nachdenken anregt"
+                  data-hint="">Fragend</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="kritisch aber respektvoll — benenne einen konkreten Schwachpunkt sachlich"
+                  data-hint="">Kritisch</div>
+
+                <div class="chip" data-g="tone"
+                  data-v="kontrovers und pointiert — beginne mit 'Da widerspreche ich …', dosiert eingesetzt um eine echte Diskussion anzustoßen, nicht aggressiv"
+                  data-hint="„Da widerspreche ich …"">Kontrovers</div>
               </div>
+              <div class="chip-hint" id="toneHint"></div>
             </div>
 
             <div class="options-grid">
-              <div class="card" style="margin-bottom:0;">
+              <div class="card" style="margin-bottom:0">
                 <div class="card-label">Sprache</div>
-                <div class="chips" id="langChips">
+                <div class="chips">
                   <div class="chip on" data-g="lang" data-v="Deutsch">🇩🇪 Deutsch</div>
                   <div class="chip" data-g="lang" data-v="Englisch">🇬🇧 Englisch</div>
                   <div class="chip" data-g="lang" data-v="Niederländisch">🇳🇱 Niederl.</div>
                 </div>
               </div>
-              <div class="card" style="margin-bottom:0;">
+              <div class="card" style="margin-bottom:0">
                 <div class="card-label">Länge</div>
-                <div class="chips" id="lengthChips">
+                <div class="chips">
                   <div class="chip" data-g="length" data-v="sehr kurz (1–2 Sätze)">Kurz</div>
                   <div class="chip on" data-g="length" data-v="mittel (3–4 Sätze)">Mittel</div>
                   <div class="chip" data-g="length" data-v="ausführlich (5–7 Sätze)">Lang</div>
@@ -760,163 +467,162 @@ code {
               </div>
             </div>
 
-            <div class="card" style="margin-top:14px;">
-              <div class="card-label">Zusatzkontext <span style="font-weight:300;letter-spacing:0;text-transform:none;font-size:11px;">(optional)</span></div>
-              <textarea id="extraCtx" rows="2"
-                placeholder="z.B. 'Ich kenne den Autor' oder 'Aktuell im selben Projekt tätig' …"></textarea>
+            <div class="card" style="margin-top:12px;">
+              <div class="card-label">Zusatzkontext <span style="text-transform:none;letter-spacing:0;font-weight:300;font-size:11px;">(optional)</span></div>
+              <textarea id="extraCtx" rows="2" placeholder="z.B. 'Ich kenne den Autor' oder 'Aktuell an ähnlichem Projekt' …"></textarea>
             </div>
 
-            <button class="btn btn-generate" id="genBtn" onclick="generate()" disabled>
+            <button class="btn-generate" id="genBtn" onclick="generateDrafts()" disabled>
               ✨ 3 Entwürfe generieren
             </button>
 
           </div>
 
-          <!-- Right: Drafts -->
-          <div class="compose-right" id="draftsArea">
-            <div class="empty-state" id="emptyState">
-              <div class="empty-icon">✦</div>
-              <div class="empty-hint">Füge links einen LinkedIn-Post ein und klicke <strong>Generieren</strong>, um Antwort-Entwürfe zu erhalten.</div>
-            </div>
-          </div>
+          <!-- RIGHT: Drafts OR Edit panel -->
+          <div class="compose-right" id="rightPanel">
 
+            <!-- Drafts view -->
+            <div id="draftsView">
+              <div class="empty-state" id="emptyState">
+                <div class="empty-icon">✦</div>
+                <div class="empty-hint">Post eingeben und <strong>Generieren</strong> tippen — drei Entwürfe erscheinen hier zum Bearbeiten.</div>
+              </div>
+            </div>
+
+            <!-- Edit view -->
+            <div class="edit-panel" id="editPanel">
+              <div class="edit-header">
+                <div class="edit-title">✏️ Meine Antwort</div>
+                <button class="btn-back" onclick="backToDrafts()">← Entwürfe</button>
+              </div>
+
+              <div>
+                <label>Entwurf bearbeiten — dann Rechtschreibprüfung starten</label>
+                <textarea class="edit-main-textarea" id="editMainText" rows="6"
+                  placeholder="Hier erscheint der ausgewählte Entwurf zum Bearbeiten …"
+                  oninput="updateEditCharCount()"></textarea>
+                <div class="char-bar">
+                  <span id="editCharCount" class="char-count"></span>
+                </div>
+              </div>
+
+              <button class="btn-spellcheck" id="spellcheckBtn" onclick="runSpellcheck()" disabled>
+                🔍 Rechtschreibprüfung & 3 Varianten
+              </button>
+
+              <div id="spellcheckResults" class="spellcheck-results" style="display:none;"></div>
+            </div>
+
+          </div>
         </div>
       </div>
 
-      <!-- ── SETTINGS PANEL ── -->
+      <!-- ════════════════ SETTINGS PANEL ════════════════ -->
       <div id="panel-settings" class="panel">
         <div class="settings-wrap">
 
-          <!-- API Key -->
-          <div class="setting-block">
-            <div class="section-title">🔑 Anthropic API-Key</div>
-            <div class="warn-box">
-              <strong>Wo bekommst du den Key?</strong>
-              Öffne <strong>console.anthropic.com</strong> → „API Keys" → „Create Key". Der Key beginnt mit <code>sk-ant-</code>. Er wird ausschließlich lokal in Safari gespeichert und nie übertragen.
-            </div>
-            <div class="input-row">
-              <label>API-Key</label>
-              <div class="api-key-wrap">
-                <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" oninput="saveKey()">
-                <button class="api-eye" onclick="toggleKey()">👁</button>
-              </div>
+          <div class="section-title">🔑 Anthropic API-Key</div>
+          <div class="warn-box">
+            <strong>Wo bekommst du den Key?</strong>
+            Öffne <strong>console.anthropic.com</strong> → „API Keys" → „Create Key". Beginnt mit <code>sk-ant-</code>. Wird nur lokal gespeichert, nie übertragen.
+          </div>
+          <div class="input-row">
+            <label>API-Key</label>
+            <div class="api-key-wrap">
+              <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-…" oninput="saveKey()">
+              <button class="api-eye" onclick="toggleKey()">👁</button>
             </div>
           </div>
 
           <div class="divider"></div>
 
-          <!-- Style -->
-          <div class="setting-block">
-            <div class="section-title">🖊 Dein Schreibstil</div>
-            <div class="info-box">
-              Beschreibe deinen Stil präzise. Beispiel: <em>„Kurze direkte Sätze. Ich sieze konsequent. Kein Loben oder Buzzwords. Fachlich fundiert, keine Adjektivflut."</em>
-            </div>
-            <div class="input-row">
-              <label>Stil-Beschreibung (wird bei jedem Entwurf mitgegeben)</label>
-              <textarea id="styleDesc" rows="4"
-                placeholder="Mein LinkedIn-Schreibstil ist …"
-                oninput="saveSettings()"></textarea>
-            </div>
+          <div class="section-title">🖊 Dein Schreibstil</div>
+          <div class="info-box">
+            Beschreibe deinen Stil: <em>„Kurze direkte Sätze. Ich sieze. Kein übertriebenes Loben. Fachlich fundiert, keine Buzzwords."</em>
+          </div>
+          <div class="input-row">
+            <label>Stil-Beschreibung</label>
+            <textarea id="styleDesc" rows="4" placeholder="Mein LinkedIn-Schreibstil ist …" oninput="saveSettings()"></textarea>
           </div>
 
           <div class="divider"></div>
 
-          <!-- Examples -->
-          <div class="setting-block">
-            <div class="section-title">📝 Eigene Beispiel-Kommentare</div>
-            <div class="info-box">
-              <strong>Zeigen wirkt besser als Beschreiben.</strong>
-              Füge 3–5 eigene LinkedIn-Kommentare ein, die du gut findest. Der Assistent lernt direkt aus deiner echten Sprache.
-            </div>
-            <div id="examplesWrap"></div>
-            <button class="btn btn-ghost" onclick="addExample()" style="margin-top:4px;">
-              + Beispiel hinzufügen
-            </button>
-          </div>
+          <div class="section-title">📝 Eigene Beispiel-Kommentare</div>
+          <div class="info-box"><strong>Zeigen wirkt besser als Beschreiben.</strong> Füge 3–5 eigene Kommentare ein, die deinen Stil repräsentieren.</div>
+          <div id="examplesWrap"></div>
+          <button class="btn-ghost" onclick="addExample()" style="margin-top:4px;">+ Beispiel hinzufügen</button>
 
           <div class="divider"></div>
 
-          <!-- Personal context -->
-          <div class="setting-block">
-            <div class="section-title">👤 Persönlicher Kontext</div>
-            <div class="input-row">
-              <label>Dein Name / Titel</label>
-              <input type="text" id="userName"
-                placeholder="z.B. Max Mustermann, Geschäftsführer"
-                oninput="saveSettings()">
-            </div>
-            <div class="input-row">
-              <label>Unternehmen / Branche</label>
-              <input type="text" id="userCompany"
-                placeholder="z.B. Bredox B.V., industrielle Abfallbehandlung"
-                oninput="saveSettings()">
-            </div>
+          <div class="section-title">👤 Persönlicher Kontext</div>
+          <div class="input-row">
+            <label>Dein Name / Titel</label>
+            <input type="text" id="userName" placeholder="z.B. Max Mustermann, Geschäftsführer" oninput="saveSettings()">
+          </div>
+          <div class="input-row">
+            <label>Unternehmen / Branche</label>
+            <input type="text" id="userCompany" placeholder="z.B. Bredox B.V., industrielle Abfallbehandlung" oninput="saveSettings()">
           </div>
 
           <div class="settings-footer">
-            <button class="btn btn-save" onclick="saveAll()">✓ Alles gespeichert</button>
+            <button class="btn-save" onclick="saveAll()">✓ Gespeichert</button>
           </div>
-
         </div>
       </div>
 
-      <!-- ── TIPS PANEL ── -->
+      <!-- ════════════════ TIPS PANEL ════════════════ -->
       <div id="panel-tips" class="panel">
         <div class="tips-wrap">
-
           <div class="safety-header">
             <div class="safety-icon">🛡️</div>
             <div class="safety-text">
               <strong>Diese App greift niemals auf dein LinkedIn-Konto zu.</strong>
-              Du kopierst Posts hierher, ich generiere Entwürfe — du entscheidest und postest selbst. Kein Token, kein Session-Cookie, kein Automatisierungsrisiko.
+              Du postest immer selbst manuell — kein Automatisierungsrisiko, keine Kontosperrung durch diese App.
             </div>
           </div>
-
-          <div class="section-title">Regeln für sicheres Engagement</div>
-
+          <div class="section-title">Sicherheitsregeln</div>
           <div class="tip-grid">
             <div class="tip-card">
               <div class="tip-num">01</div>
               <div class="tip-head">Kommentare dosieren <span class="badge badge-r">Kritisch</span></div>
-              <div class="tip-body">Maximal 10–15 Kommentare pro Tag, verteilt über den Tag. LinkedIn erkennt unnatürliche Aktivitätsmuster und drosselt die Reichweite oder schränkt Konten ein.</div>
+              <div class="tip-body">Max. 10–15 Kommentare pro Tag, verteilt über den Tag. LinkedIn erkennt Aktivitätsspitzen und drosselt die Reichweite.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">02</div>
               <div class="tip-head">Immer individualisieren <span class="badge badge-r">Kritisch</span></div>
-              <div class="tip-body">Ändere jeden Entwurf leicht ab – ein Satz, eine Formulierung. Identische Texte wirken als Spam-Signal, sowohl für den Algorithmus als auch für dein Netzwerk.</div>
+              <div class="tip-body">Ändere jeden Entwurf vor dem Posten. Identische Texte wirken als Spam-Signal und schwächen deine persönliche Marke.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">03</div>
               <div class="tip-head">Organisch mischen <span class="badge badge-g">Empfehlung</span></div>
-              <div class="tip-body">Nicht jeder Kommentar muss durchdacht sein. Kurze spontane Reaktionen halten dein Profil authentisch. Setze dieses Tool für wichtige, sichtbare Posts ein.</div>
+              <div class="tip-body">Nicht jeder Kommentar muss ausgefeilt sein. Spontane kurze Reaktionen halten dein Profil authentisch.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">04</div>
               <div class="tip-head">Beste Zeiten <span class="badge badge-b">Info</span></div>
-              <div class="tip-body">Di–Do, 8–10 Uhr und 17–19 Uhr erzielen die höchste Sichtbarkeit auf LinkedIn. Kommentare in diesen Fenstern bekommen mehr organische Reichweite.</div>
+              <div class="tip-body">Di–Do, 8–10 Uhr und 17–19 Uhr erzielen die höchste Sichtbarkeit auf LinkedIn.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">05</div>
-              <div class="tip-head">Zeichenlimit <span class="badge badge-b">Info</span></div>
-              <div class="tip-body">Kommentare: max. <strong>1.250 Zeichen</strong>. Posts: max. <strong>3.000 Zeichen</strong>. Die App zeigt den Zähler direkt unter jedem Entwurf an.</div>
+              <div class="tip-head">Zeichenlimits <span class="badge badge-b">Info</span></div>
+              <div class="tip-body">Kommentare: max. <strong>1.250 Zeichen</strong>. Posts: max. <strong>3.000 Zeichen</strong>. Die App zeigt den Zähler live.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">06</div>
-              <div class="tip-head">Verbindungsanfragen <span class="badge badge-b">Info</span></div>
-              <div class="tip-body">LinkedIn limitiert auf 100 Anfragen/Woche. Empfehlung: max. 20/Tag mit persönlicher Nachricht. Betrifft diese App zwar nicht, ist aber für dein Gesamtverhalten wichtig.</div>
+              <div class="tip-head">Kontrovers dosiert einsetzen <span class="badge badge-r">Wichtig</span></div>
+              <div class="tip-body">Der „Kontrovers"-Stil ist wirkungsvoll — aber sparsam verwenden. 1× pro Woche max. Zu viel Widerspruch schadet deinem Netzwerk-Image.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">07</div>
-              <div class="tip-head">Eigene Stimme schützen <span class="badge badge-g">Empfehlung</span></div>
-              <div class="tip-body">Nutze Stil-Beschreibung und Beispiele in den Einstellungen. Entwürfe, die deiner echten Sprache ähneln, stärken deine Reputation. KI-hafte Texte können deiner Marke schaden.</div>
+              <div class="tip-head">Verbindungsanfragen <span class="badge badge-b">Info</span></div>
+              <div class="tip-body">Max. 100/Woche, empfohlen max. 20/Tag mit persönlicher Nachricht.</div>
             </div>
             <div class="tip-card">
               <div class="tip-num">08</div>
-              <div class="tip-head">Auf Antworten reagieren <span class="badge badge-g">Empfehlung</span></div>
-              <div class="tip-body">Antworte auf Kommentare unter deinen Posts innerhalb der ersten Stunde – das boosted den Algorithmus erheblich. Qualität schlägt Quantität.</div>
+              <div class="tip-head">Screenshots sicher <span class="badge badge-g">Info</span></div>
+              <div class="tip-body">Hochgeladene Screenshots werden nur für diesen API-Call verwendet. Sie werden nicht gespeichert und verlassen dein Gerät nur für die API-Anfrage.</div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -925,30 +631,40 @@ code {
 </div><!-- /shell -->
 
 <script>
-// ─── State ─────────────────────────────────────────────────────────────────
+// ─── State ──────────────────────────────────────────────────────────────────
 let examples = [];
+let uploadedImageBase64 = null;
+let uploadedImageType = null;
+let currentDraftsData = [];
 
 const panelTitles = {
-  compose:  'Antwort verfassen',
+  compose: 'Antwort verfassen',
   settings: 'Einstellungen',
-  tips:     'LinkedIn-Sicherheitstipps'
+  tips: 'Sicherheitstipps'
 };
 
-// ─── Init ───────────────────────────────────────────────────────────────────
+// ─── Init ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadAll();
   updateApiStatus();
   renderExamples();
   updateGenBtn();
 
-  // Keyboard shortcuts (Magic Keyboard)
   document.addEventListener('keydown', e => {
-    if (e.metaKey && e.key === 'g') { e.preventDefault(); generate(); }
+    if (e.metaKey && e.key === 'g') { e.preventDefault(); generateDrafts(); }
     if (e.metaKey && e.key === 'k') { e.preventDefault(); document.getElementById('postInput').focus(); }
+  });
+
+  // Tone chip hint display
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('chip') && e.target.dataset.g === 'tone') {
+      const hint = e.target.dataset.hint || '';
+      document.getElementById('toneHint').textContent = hint ? '↳ Antwortstil: ' + hint : '';
+    }
   });
 });
 
-// ─── Panel switching ────────────────────────────────────────────────────────
+// ─── Panel switching ─────────────────────────────────────────────────────────
 function switchPanel(btn) {
   const name = btn.dataset.panel;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -958,65 +674,117 @@ function switchPanel(btn) {
   document.getElementById('panelTitle').textContent = panelTitles[name];
 }
 
-// ─── Chip selection ─────────────────────────────────────────────────────────
+// ─── Chip selection ───────────────────────────────────────────────────────────
 document.addEventListener('click', e => {
   if (e.target.classList.contains('chip') && e.target.dataset.g) {
     const g = e.target.dataset.g;
     document.querySelectorAll(`.chip[data-g="${g}"]`).forEach(c => c.classList.remove('on'));
     e.target.classList.add('on');
+    if (g === 'role' || g === 'lang' || g === 'length') updateGenBtn();
   }
 });
 
-function chipVal(group) {
-  const el = document.querySelector(`.chip.on[data-g="${group}"]`);
+function chipVal(g) {
+  const el = document.querySelector(`.chip.on[data-g="${g}"]`);
   return el ? el.dataset.v : '';
 }
 
-// ─── Generate ───────────────────────────────────────────────────────────────
-function updateGenBtn() {
-  const has = document.getElementById('postInput').value.trim().length > 10;
-  const key = localStorage.getItem('li_api_key') || '';
-  document.getElementById('genBtn').disabled = !(has && key);
+// ─── Image upload ─────────────────────────────────────────────────────────────
+function triggerUpload() {
+  if (!uploadedImageBase64) document.getElementById('imageInput').click();
 }
 
-async function generate() {
-  const post    = document.getElementById('postInput').value.trim();
-  const extra   = document.getElementById('extraCtx').value.trim();
-  const apiKey  = localStorage.getItem('li_api_key') || '';
-  const style   = localStorage.getItem('li_style') || '';
+function handleImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  uploadedImageType = file.type;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadedImageBase64 = e.target.result.split(',')[1];
+    document.getElementById('uploadPreview').src = e.target.result;
+    document.getElementById('uploadPreview').style.display = 'block';
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+    document.getElementById('uploadClear').style.display = 'flex';
+    document.getElementById('uploadArea').classList.add('has-image');
+    updateGenBtn();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage(e) {
+  e.stopPropagation();
+  uploadedImageBase64 = null;
+  uploadedImageType = null;
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadClear').style.display = 'none';
+  document.getElementById('uploadArea').classList.remove('has-image');
+  document.getElementById('imageInput').value = '';
+  updateGenBtn();
+}
+
+// ─── Generate button state ───────────────────────────────────────────────────
+function updateGenBtn() {
+  const hasText = document.getElementById('postInput').value.trim().length > 5;
+  const hasImage = !!uploadedImageBase64;
+  const hasKey = !!(localStorage.getItem('li_api_key') || '');
+  document.getElementById('genBtn').disabled = !(( hasText || hasImage) && hasKey);
+}
+
+// ─── Build API messages ───────────────────────────────────────────────────────
+function buildSystemPrompt() {
   const name    = localStorage.getItem('li_name') || '';
   const company = localStorage.getItem('li_company') || '';
+  const style   = localStorage.getItem('li_style') || '';
   const exList  = JSON.parse(localStorage.getItem('li_examples') || '[]');
 
-  if (!post) return;
-  if (!apiKey) { alert('Bitte zuerst den Anthropic API-Key in den Einstellungen eintragen.'); return; }
+  return [
+    'Du bist ein professioneller LinkedIn-Kommunikationsassistent.',
+    name    ? `Nutzer: ${name}.` : '',
+    company ? `Unternehmen/Branche: ${company}.` : '',
+    style   ? `\nSchreibstil des Nutzers:\n${style}` : '',
+    exList.length ? `\nBeispiel-Kommentare des Nutzers:\n${exList.map((e,i)=>`[${i+1}] ${e}`).join('\n')}` : '',
+    `\nErstelle genau 3 verschiedene Antworten. Antworte NUR mit diesem JSON, ohne Markdown:\n{"drafts":["Text1","Text2","Text3"]}`
+  ].filter(Boolean).join('\n');
+}
+
+function buildUserContent(promptText) {
+  if (uploadedImageBase64) {
+    return [
+      { type: 'image', source: { type: 'base64', media_type: uploadedImageType || 'image/jpeg', data: uploadedImageBase64 } },
+      { type: 'text', text: promptText }
+    ];
+  }
+  return promptText;
+}
+
+// ─── Generate drafts ──────────────────────────────────────────────────────────
+async function generateDrafts() {
+  const post   = document.getElementById('postInput').value.trim();
+  const extra  = document.getElementById('extraCtx').value.trim();
+  const apiKey = localStorage.getItem('li_api_key') || '';
+
+  if (!apiKey) { alert('Bitte zuerst API-Key in den Einstellungen eintragen.'); return; }
+  if (!post && !uploadedImageBase64) return;
 
   const role   = chipVal('role');
   const tone   = chipVal('tone');
   const lang   = chipVal('lang');
   const length = chipVal('length');
 
-  const draftsArea = document.getElementById('draftsArea');
-  draftsArea.innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Entwürfe werden generiert …</span></div>`;
+  // Switch to drafts view
+  showDraftsView();
+  document.getElementById('draftsView').innerHTML = `<div class="loading-state"><div class="spinner"></div><span>Entwürfe werden generiert …</span></div>`;
 
-  const systemParts = [
-    `Du bist ein professioneller LinkedIn-Kommunikationsassistent.`,
-    name    ? `Der Nutzer ist: ${name}.` : '',
-    company ? `Unternehmen/Branche: ${company}.` : '',
-    style   ? `\nSchreibstil des Nutzers:\n${style}` : '',
-    exList.length ? `\nBeispiel-Kommentare des Nutzers (lerne daraus):\n${exList.map((e,i)=>`[${i+1}] ${e}`).join('\n')}` : '',
-    `\nErstelle IMMER genau 3 voneinander verschiedene Antworten im folgenden JSON-Format – keine Prosa, kein Markdown drumherum:
-{"drafts":["Antwort 1","Antwort 2","Antwort 3"]}`
-  ].filter(Boolean).join('\n');
-
-  const userPrompt = [
-    `LinkedIn-Post:\n"""${post}"""`,
+  const promptText = [
+    post ? `LinkedIn-Post:\n"""${post}"""` : 'Analysiere den Screenshot-Inhalt als LinkedIn-Post.',
+    uploadedImageBase64 ? '(Sieh dir den Screenshot an und verwende seinen Inhalt als Basis.)' : '',
     extra ? `Zusatzkontext: ${extra}` : '',
     `Perspektive: ${role}`,
     `Tonalität: ${tone}`,
     `Sprache: ${lang}`,
     `Länge: ${length}`,
-    `\nSchreibe die 3 Entwürfe jetzt. Antworte ausschließlich mit dem JSON-Objekt.`
+    'Schreibe jetzt die 3 Entwürfe. Nur JSON zurückgeben.'
   ].filter(Boolean).join('\n');
 
   try {
@@ -1030,94 +798,207 @@ async function generate() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1200,
-        system: systemParts,
-        messages: [{ role: 'user', content: userPrompt }]
+        max_tokens: 1400,
+        system: buildSystemPrompt(),
+        messages: [{ role: 'user', content: buildUserContent(promptText) }]
       })
     });
 
     const data = await resp.json();
-
-    if (!resp.ok) {
-      const msg = data?.error?.message || 'Unbekannter Fehler';
-      draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">API-Fehler: ${msg}</div></div>`;
-      return;
-    }
+    if (!resp.ok) throw new Error(data?.error?.message || 'API Fehler');
 
     const raw = data.content?.map(b => b.text || '').join('') || '';
-    let drafts = [];
+    let drafts = parseDrafts(raw);
 
-    try {
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean);
-      drafts = parsed.drafts || [];
-    } catch {
-      // Fallback: split by numbered list
-      drafts = raw.split(/\n(?=\d\.)/).map(s => s.replace(/^\d\.\s*/, '').trim()).filter(Boolean).slice(0, 3);
-    }
-
-    if (!drafts.length) {
-      draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">Konnte keine Entwürfe parsen. Bitte nochmal versuchen.</div></div>`;
-      return;
-    }
-
-    renderDrafts(drafts, draftsArea);
+    if (!drafts.length) throw new Error('Konnte Entwürfe nicht parsen.');
+    currentDraftsData = drafts;
+    renderDraftCards(drafts);
 
   } catch (err) {
-    draftsArea.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">Fehler: ${err.message}</div></div>`;
+    document.getElementById('draftsView').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-hint">${err.message}</div></div>`;
   }
 }
 
-function renderDrafts(drafts, container) {
-  const limit = 1250;
-  container.innerHTML = '';
+function parseDrafts(raw) {
+  try {
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error();
+    return JSON.parse(clean.slice(start, end + 1)).drafts || [];
+  } catch {
+    return raw.split(/\n(?=\d[\.\)])/).map(s => s.replace(/^\d[\.\)]\s*/, '').trim()).filter(s => s.length > 10).slice(0, 3);
+  }
+}
 
+function renderDraftCards(drafts) {
+  const container = document.getElementById('draftsView');
+  container.innerHTML = '';
   drafts.forEach((text, i) => {
     const card = document.createElement('div');
     card.className = 'draft-card';
     card.innerHTML = `
       <div class="draft-top">
         <div class="draft-tag">Entwurf ${i + 1}</div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-copy" id="copy${i}" onclick="copyDraft(${i})">Kopieren</button>
+        <div class="draft-actions">
+          <button class="btn-edit" onclick="editDraft(${i})">✏️ Editieren</button>
+          <button class="btn-copy" id="dcopy${i}" onclick="copyText('draft_ta_${i}', 'dcopy${i}')">Kopieren</button>
         </div>
       </div>
-      <textarea class="draft-textarea" id="draft${i}" rows="4" oninput="updateChar(${i})">${escHtml(text)}</textarea>
-      <div class="char-bar">
-        <span id="charCount${i}" class="char-count">0 / ${limit}</span>
-      </div>
+      <textarea class="draft-textarea" id="draft_ta_${i}" rows="4" oninput="updateChar('draft_ta_${i}','dchar${i}')">${escHtml(text)}</textarea>
+      <div class="char-bar"><span id="dchar${i}" class="char-count"></span></div>
     `;
     container.appendChild(card);
-    updateChar(i);
+    updateChar(`draft_ta_${i}`, `dchar${i}`);
   });
 }
 
-function updateChar(i) {
-  const ta = document.getElementById(`draft${i}`);
+// ─── Edit panel ───────────────────────────────────────────────────────────────
+function editDraft(i) {
+  const ta = document.getElementById(`draft_ta_${i}`);
   if (!ta) return;
-  const len = ta.value.length;
-  const limit = 1250;
-  const el = document.getElementById(`charCount${i}`);
+  document.getElementById('editMainText').value = ta.value;
+  updateEditCharCount();
+  showEditView();
+}
+
+function showEditView() {
+  document.getElementById('draftsView').style.display = 'none';
+  document.getElementById('editPanel').classList.add('active');
+  document.getElementById('spellcheckResults').style.display = 'none';
+  updateSpellcheckBtn();
+}
+
+function showDraftsView() {
+  document.getElementById('draftsView').style.display = 'block';
+  document.getElementById('editPanel').classList.remove('active');
+}
+
+function backToDrafts() { showDraftsView(); }
+
+function updateEditCharCount() {
+  const val = document.getElementById('editMainText').value;
+  updateChar('editMainText', 'editCharCount');
+  updateSpellcheckBtn();
+}
+
+function updateSpellcheckBtn() {
+  const has = document.getElementById('editMainText').value.trim().length > 10;
+  const hasKey = !!(localStorage.getItem('li_api_key') || '');
+  document.getElementById('spellcheckBtn').disabled = !(has && hasKey);
+}
+
+// ─── Spell check ─────────────────────────────────────────────────────────────
+async function runSpellcheck() {
+  const text   = document.getElementById('editMainText').value.trim();
+  const apiKey = localStorage.getItem('li_api_key') || '';
+  if (!text || !apiKey) return;
+
+  const resultsArea = document.getElementById('spellcheckResults');
+  resultsArea.style.display = 'block';
+  resultsArea.innerHTML = `<div class="loading-state"><div class="spinner purple"></div><span>Rechtschreibprüfung läuft …</span></div>`;
+
+  const name    = localStorage.getItem('li_name') || '';
+  const company = localStorage.getItem('li_company') || '';
+  const style   = localStorage.getItem('li_style') || '';
+
+  const system = [
+    'Du bist ein professioneller Lektor für LinkedIn-Texte auf Deutsch.',
+    name    ? `Autor: ${name}.` : '',
+    company ? `Unternehmen: ${company}.` : '',
+    style   ? `Schreibstil: ${style}` : '',
+    `Korrigiere Rechtschreibung, Grammatik und Zeichensetzung. Behalte den Stil und die Aussage des Autors bei. Erstelle 3 leicht verschiedene korrigierte Versionen (Variationen in Formulierung erlaubt, Aussage gleich). Antworte NUR mit diesem JSON:\n{"drafts":["Version1","Version2","Version3"]}`
+  ].filter(Boolean).join('\n');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: `Bitte korrigiere diesen LinkedIn-Kommentar:\n\n"""${text}"""` }]
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error?.message || 'API Fehler');
+
+    const raw = data.content?.map(b => b.text || '').join('') || '';
+    const drafts = parseDrafts(raw);
+    if (!drafts.length) throw new Error('Konnte Korrekturen nicht parsen.');
+    renderCorrectedCards(drafts, resultsArea);
+
+  } catch (err) {
+    resultsArea.innerHTML = `<div class="empty-state" style="min-height:100px;"><div class="empty-icon">⚠️</div><div class="empty-hint">${err.message}</div></div>`;
+  }
+}
+
+function renderCorrectedCards(drafts, container) {
+  container.innerHTML = `<span class="spellcheck-label">✓ Korrigierte Versionen — auswählen und kopieren</span>`;
+  drafts.forEach((text, i) => {
+    const card = document.createElement('div');
+    card.className = 'corrected-card';
+    card.innerHTML = `
+      <div class="corrected-top">
+        <div class="corrected-tag">Version ${i + 1}</div>
+        <div class="draft-actions">
+          <button class="btn-edit" style="font-size:11px;padding:4px 10px;" onclick="useVersion(${i})">← Übernehmen</button>
+          <button class="btn-copy" id="ccopy${i}" onclick="copyText('corr_ta_${i}','ccopy${i}')">Kopieren</button>
+        </div>
+      </div>
+      <textarea class="corrected-textarea" id="corr_ta_${i}" rows="3" oninput="updateChar('corr_ta_${i}','cchar${i}')">${escHtml(text)}</textarea>
+      <div class="char-bar"><span id="cchar${i}" class="char-count"></span></div>
+    `;
+    container.appendChild(card);
+    updateChar(`corr_ta_${i}`, `cchar${i}`);
+  });
+}
+
+function useVersion(i) {
+  const ta = document.getElementById(`corr_ta_${i}`);
+  if (ta) {
+    document.getElementById('editMainText').value = ta.value;
+    updateEditCharCount();
+    document.getElementById('spellcheckResults').style.display = 'none';
+  }
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function updateChar(taId, countId) {
+  const ta = document.getElementById(taId);
+  const el = document.getElementById(countId);
+  if (!ta || !el) return;
+  const len = ta.value.length, limit = 1250;
   el.textContent = `${len} / ${limit}`;
   el.className = 'char-count' + (len > limit ? ' over' : len > limit * 0.85 ? ' warn' : '');
 }
 
-function copyDraft(i) {
-  const ta = document.getElementById(`draft${i}`);
-  if (!ta) return;
+function copyText(taId, btnId) {
+  const ta = document.getElementById(taId);
+  const btn = document.getElementById(btnId);
+  if (!ta || !btn) return;
   navigator.clipboard.writeText(ta.value).then(() => {
-    const btn = document.getElementById(`copy${i}`);
     btn.textContent = '✓ Kopiert';
     btn.classList.add('done');
-    setTimeout(() => { btn.textContent = 'Kopieren'; btn.classList.remove('done'); }, 2000);
+    setTimeout(() => { btn.textContent = 'Kopieren'; btn.classList.remove('done'); }, 2200);
+  }).catch(() => {
+    ta.select();
+    document.execCommand('copy');
   });
 }
 
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ─── API Key ────────────────────────────────────────────────────────────────
+// ─── API Key ──────────────────────────────────────────────────────────────────
 function saveKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
   if (val) localStorage.setItem('li_api_key', val);
@@ -1135,16 +1016,12 @@ function updateApiStatus() {
   const key = localStorage.getItem('li_api_key') || '';
   const badge = document.getElementById('apiBadge');
   const txt   = document.getElementById('apiBadgeText');
-  if (key && key.startsWith('sk-')) {
-    badge.className = 'api-badge ok';
-    txt.textContent = 'API aktiv';
-  } else {
-    badge.className = 'api-badge missing';
-    txt.textContent = 'Kein API-Key';
-  }
+  const ok = key.startsWith('sk-');
+  badge.className = 'api-badge ' + (ok ? 'ok' : 'missing');
+  txt.textContent = ok ? 'API aktiv' : 'Kein API-Key';
 }
 
-// ─── Settings persistence ────────────────────────────────────────────────────
+// ─── Settings ─────────────────────────────────────────────────────────────────
 function saveSettings() {
   localStorage.setItem('li_style',   document.getElementById('styleDesc').value);
   localStorage.setItem('li_name',    document.getElementById('userName').value);
@@ -1152,37 +1029,34 @@ function saveSettings() {
 }
 
 function saveAll() {
-  saveSettings();
-  saveExamples();
+  saveSettings(); saveExamples();
   const btn = document.querySelector('.btn-save');
-  const orig = btn.textContent;
   btn.textContent = '✓ Gespeichert!';
-  setTimeout(() => btn.textContent = orig, 2000);
+  setTimeout(() => btn.textContent = '✓ Gespeichert', 2000);
 }
 
 function loadAll() {
   const key = localStorage.getItem('li_api_key') || '';
   if (key) document.getElementById('apiKeyInput').value = key;
-  document.getElementById('styleDesc').value  = localStorage.getItem('li_style')   || '';
-  document.getElementById('userName').value   = localStorage.getItem('li_name')    || '';
-  document.getElementById('userCompany').value= localStorage.getItem('li_company') || '';
+  document.getElementById('styleDesc').value   = localStorage.getItem('li_style')   || '';
+  document.getElementById('userName').value    = localStorage.getItem('li_name')    || '';
+  document.getElementById('userCompany').value = localStorage.getItem('li_company') || '';
   examples = JSON.parse(localStorage.getItem('li_examples') || '[]');
 }
 
-// ─── Examples ───────────────────────────────────────────────────────────────
+// ─── Examples ─────────────────────────────────────────────────────────────────
 function renderExamples() {
   const wrap = document.getElementById('examplesWrap');
   wrap.innerHTML = '';
   if (!examples.length) {
-    wrap.innerHTML = '<p style="font-size:13px;color:var(--text-3);margin-bottom:10px;">Noch keine Beispiele hinzugefügt.</p>';
+    wrap.innerHTML = '<p style="font-size:12.5px;color:var(--text-3);margin-bottom:10px;">Noch keine Beispiele hinzugefügt.</p>';
     return;
   }
   examples.forEach((ex, i) => {
     const div = document.createElement('div');
     div.className = 'example-item';
     div.innerHTML = `
-      <textarea class="draft-textarea" rows="3"
-        style="padding-right:40px;"
+      <textarea class="draft-textarea" rows="3" style="padding-right:36px;"
         oninput="examples[${i}]=this.value;saveExamples()">${escHtml(ex)}</textarea>
       <button class="example-del" onclick="removeExample(${i})">✕</button>
     `;
@@ -1192,17 +1066,14 @@ function renderExamples() {
 
 function addExample() {
   examples.push('');
-  saveExamples();
-  renderExamples();
-  // Focus last textarea
+  saveExamples(); renderExamples();
   const tas = document.querySelectorAll('#examplesWrap textarea');
   if (tas.length) tas[tas.length - 1].focus();
 }
 
 function removeExample(i) {
   examples.splice(i, 1);
-  saveExamples();
-  renderExamples();
+  saveExamples(); renderExamples();
 }
 
 function saveExamples() {
