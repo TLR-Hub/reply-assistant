@@ -743,8 +743,12 @@ function buildSystemPrompt() {
     name    ? `Nutzer: ${name}.` : '',
     company ? `Unternehmen/Branche: ${company}.` : '',
     style   ? `\nSchreibstil des Nutzers:\n${style}` : '',
-    exList.length ? `\nBeispiel-Kommentare des Nutzers:\n${exList.map((e,i)=>`[${i+1}] ${e}`).join('\n')}` : '',
-    `\nErstelle genau 3 verschiedene Antworten. Antworte NUR mit diesem JSON, ohne Markdown:\n{"drafts":["Text1","Text2","Text3"]}`
+    exList.length ? `\nBeispiel-Kommentare des Nutzers (lerne daraus):\n${exList.map((e,i)=>`[${i+1}] ${e}`).join('\n')}` : '',
+    `\nANTWORTFORMAT — STRIKT EINHALTEN:
+Antworte AUSSCHLIESSLICH mit einem einzigen JSON-Objekt. Kein Text davor, kein Text danach, kein Markdown.
+Exakt dieses Format:
+{"drafts":["Vollständiger Text Entwurf 1","Vollständiger Text Entwurf 2","Vollständiger Text Entwurf 3"]}
+Genau 3 Einträge im Array. Keine verschachtelten Objekte. Keine nummerierten Listen.`
   ].filter(Boolean).join('\n');
 }
 
@@ -820,15 +824,62 @@ async function generateDrafts() {
 }
 
 function parseDrafts(raw) {
+  if (!raw) return [];
+
+  // Strategie 1: Direktes JSON-Parsing nach Bereinigung
   try {
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const start = clean.indexOf('{');
-    const end = clean.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error();
-    return JSON.parse(clean.slice(start, end + 1)).drafts || [];
-  } catch {
-    return raw.split(/\n(?=\d[\.\)])/).map(s => s.replace(/^\d[\.\)]\s*/, '').trim()).filter(s => s.length > 10).slice(0, 3);
+    const clean = raw.replace(/```json\n?|```\n?/g, '').trim();
+    const parsed = JSON.parse(clean);
+    if (parsed.drafts && Array.isArray(parsed.drafts) && parsed.drafts.length > 0) {
+      return parsed.drafts.filter(d => typeof d === 'string' && d.trim().length > 0).slice(0, 3);
+    }
+  } catch {}
+
+  // Strategie 2: JSON-Objekt aus umgebendem Text extrahieren
+  try {
+    const start = raw.indexOf('{');
+    const end   = raw.lastIndexOf('}');
+    if (start !== -1 && end > start) {
+      const parsed = JSON.parse(raw.slice(start, end + 1));
+      if (parsed.drafts && Array.isArray(parsed.drafts) && parsed.drafts.length > 0) {
+        return parsed.drafts.filter(d => typeof d === 'string' && d.trim().length > 0).slice(0, 3);
+      }
+    }
+  } catch {}
+
+  // Strategie 3: Strings aus "drafts"-Array per Regex extrahieren
+  try {
+    const arrMatch = raw.match(/"drafts"\s*:\s*\[([\s\S]*?)\]/);
+    if (arrMatch) {
+      const items = [];
+      const re = /"((?:[^"\\]|\\.)*)"/g;
+      let m;
+      while ((m = re.exec(arrMatch[1])) !== null) {
+        const decoded = m[1]
+          .replace(/\\n/g, '\n').replace(/\\t/g, '\t')
+          .replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        if (decoded.trim().length > 10) items.push(decoded);
+      }
+      if (items.length > 0) return items.slice(0, 3);
+    }
+  } catch {}
+
+  // Strategie 4: Nummerierte Liste als letzter Ausweg
+  const lines = raw.split('\n');
+  const results = [];
+  let cur = '';
+  for (const line of lines) {
+    if (/^\s*\d[\.\)]\s/.test(line)) {
+      if (cur.trim().length > 10) results.push(cur.trim());
+      cur = line.replace(/^\s*\d[\.\)]\s*/, '');
+    } else if (cur) {
+      cur += '\n' + line;
+    }
   }
+  if (cur.trim().length > 10) results.push(cur.trim());
+  if (results.length > 0) return results.slice(0, 3);
+
+  return [];
 }
 
 function renderDraftCards(drafts) {
@@ -837,6 +888,7 @@ function renderDraftCards(drafts) {
   drafts.forEach((text, i) => {
     const card = document.createElement('div');
     card.className = 'draft-card';
+    // Textarea OHNE Inhalt in innerHTML — Wert wird danach direkt gesetzt
     card.innerHTML = `
       <div class="draft-top">
         <div class="draft-tag">Entwurf ${i + 1}</div>
@@ -845,10 +897,12 @@ function renderDraftCards(drafts) {
           <button class="btn-copy" id="dcopy${i}" onclick="copyText('draft_ta_${i}', 'dcopy${i}')">Kopieren</button>
         </div>
       </div>
-      <textarea class="draft-textarea" id="draft_ta_${i}" rows="4" oninput="updateChar('draft_ta_${i}','dchar${i}')">${escHtml(text)}</textarea>
+      <textarea class="draft-textarea" id="draft_ta_${i}" rows="4" oninput="updateChar('draft_ta_${i}','dchar${i}')"></textarea>
       <div class="char-bar"><span id="dchar${i}" class="char-count"></span></div>
     `;
     container.appendChild(card);
+    // Direkt über .value setzen — keine HTML-Kodierung, keine Artefakte
+    document.getElementById(`draft_ta_${i}`).value = text;
     updateChar(`draft_ta_${i}`, `dchar${i}`);
   });
 }
@@ -857,7 +911,13 @@ function renderDraftCards(drafts) {
 function editDraft(i) {
   const ta = document.getElementById(`draft_ta_${i}`);
   if (!ta) return;
-  document.getElementById('editMainText').value = ta.value;
+  let text = ta.value.trim();
+  // Sicherheitscheck: Falls doch JSON-Artefakte im Text sind, bereinigen
+  if (text.startsWith('{"drafts"') || text.startsWith('{"draft')) {
+    const drafts = parseDrafts(text);
+    if (drafts.length > 0) text = drafts[0];
+  }
+  document.getElementById('editMainText').value = text;
   updateEditCharCount();
   showEditView();
 }
@@ -903,11 +963,15 @@ async function runSpellcheck() {
   const style   = localStorage.getItem('li_style') || '';
 
   const system = [
-    'Du bist ein professioneller Lektor für LinkedIn-Texte auf Deutsch.',
+    'Du bist ein professioneller Lektor für LinkedIn-Texte.',
     name    ? `Autor: ${name}.` : '',
     company ? `Unternehmen: ${company}.` : '',
     style   ? `Schreibstil: ${style}` : '',
-    `Korrigiere Rechtschreibung, Grammatik und Zeichensetzung. Behalte den Stil und die Aussage des Autors bei. Erstelle 3 leicht verschiedene korrigierte Versionen (Variationen in Formulierung erlaubt, Aussage gleich). Antworte NUR mit diesem JSON:\n{"drafts":["Version1","Version2","Version3"]}`
+    `Korrigiere Rechtschreibung, Grammatik und Zeichensetzung. Behalte Stil und Aussage des Autors bei.
+ANTWORTFORMAT — STRIKT EINHALTEN:
+Antworte AUSSCHLIESSLICH mit einem einzigen JSON-Objekt, kein Text davor oder danach:
+{"drafts":["Korrigierte Version 1","Korrigierte Version 2","Korrigierte Version 3"]}
+Genau 3 leicht verschiedene korrigierte Versionen im Array.`
   ].filter(Boolean).join('\n');
 
   try {
@@ -953,10 +1017,11 @@ function renderCorrectedCards(drafts, container) {
           <button class="btn-copy" id="ccopy${i}" onclick="copyText('corr_ta_${i}','ccopy${i}')">Kopieren</button>
         </div>
       </div>
-      <textarea class="corrected-textarea" id="corr_ta_${i}" rows="3" oninput="updateChar('corr_ta_${i}','cchar${i}')">${escHtml(text)}</textarea>
+      <textarea class="corrected-textarea" id="corr_ta_${i}" rows="3" oninput="updateChar('corr_ta_${i}','cchar${i}')"></textarea>
       <div class="char-bar"><span id="cchar${i}" class="char-count"></span></div>
     `;
     container.appendChild(card);
+    document.getElementById(`corr_ta_${i}`).value = text;
     updateChar(`corr_ta_${i}`, `cchar${i}`);
   });
 }
